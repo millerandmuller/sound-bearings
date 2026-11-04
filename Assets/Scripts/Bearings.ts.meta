@@ -1,0 +1,79 @@
+- !<AssetImportMetadata/644184c3-9e3b-4d02-bf0a-176d6a910ada>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> a79a16ee-933a-4f67-8f2e-1763c8ac44c2
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> a79a16ee-933a-4f67-8f2e-1763c8ac44c2
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 09d10bd4-dcac-49c1-8832-3c2c463a5790
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/09d10bd4-dcac-49c1-8832-3c2c463a5790>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  VersionPrerelease: ""
+  UpdateOrder: 0
+  ComponentUid: 68b51985-879c-45be-ae4d-f789cbd6a814
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    alarmIndicator: false
+    camera: false
+    coneHalfAngle: false
+    doorbellIndicator: false
+    edgeAngle: false
+    edgeDistance: false
+    fadeSeconds: false
+    hysteresis: false
+    kettleIndicator: false
+    personIndicator: false
+    sources: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - sources: !<MappingBased.AssignableType_1> 00000000-0000-0000-0000-000000000000
+      camera: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      kettleIndicator: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      doorbellIndicator: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      personIndicator: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      alarmIndicator: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      coneHalfAngle: !<float> 20.000000
+      hysteresis: !<float> 5.000000
+      edgeAngle: !<float> 20.000000
+      edgeDistance: !<float> 110.000000
+      fadeSeconds: 0.500000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input AssignableType_1 sources
+    - "// @input SceneObject camera {\"hint\":\"The Camera Object (the user's head).\"}"
+    - '// @input SceneObject kettleIndicator {"hint":"Ind_Kettle, with children Ring and ArrowPivot."}'
+    - '// @input SceneObject doorbellIndicator {"hint":"Ind_Doorbell, with children Ring and ArrowPivot."}'
+    - '// @input SceneObject personIndicator {"hint":"Ind_Person, with children Ring and ArrowPivot."}'
+    - '// @input SceneObject alarmIndicator {"hint":"Ind_Alarm, with children Ring and ArrowPivot."}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"group_start", "label":"Settings"}'
+    - '// @input float coneHalfAngle = 14 {"hint":"Half-angle of the view cone in degrees. Inside it the indicator is a ring on the source."}'
+    - '// @input float hysteresis = 5 {"hint":"Extra degrees past the cone before a ring turns back into an arrow (stops flicker at the edge)."}'
+    - '// @input float edgeAngle = 14 {"hint":"Angular distance from the view centre where the arrow sits, in degrees. Equal to the cone so the arrow and ring meet."}'
+    - '// @input float edgeDistance = 110 {"hint":"How far from the eye the edge arrow floats, in cm."}'
+    - '// @input float fadeSeconds = 0.5 {"hint":"Seconds an indicator takes to fade in and out."}'
+    - '// @ui {"widget":"group_end"}'

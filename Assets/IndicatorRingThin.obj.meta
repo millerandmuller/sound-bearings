@@ -1,0 +1,85 @@
+- !<AssetImportMetadata/ec8506aa-4d55-4e7e-8adf-b0c7abbf6aee>
+  ImportedAssetIds:
+    26ba073d67b9d0dd: !<reference> 347fbd4f-8520-4a7e-937a-1b1d1b0e7ea2
+    6681b3f8f8f5ede3: !<reference> f90aa3a2-fe56-4a7a-bb54-bdc763d92ddf
+    Meshes/Mesh 1: !<reference> aabbd70f-df15-4f01-974a-a7a13dfcc479
+    Scene: !<reference> d0ef7724-ed3c-4715-a0c5-5b51083c0648
+    cb16681e7113a59e: !<reference> 890678c7-c97c-459d-a8a0-d31f5ba2f45d
+  ImporterName: ObjImporter
+  PrimaryAsset: !<reference> d0ef7724-ed3c-4715-a0c5-5b51083c0648
+  PackageType: LegacyPackage
+  LegacyPackagePolicy: CanBeUnpackedTransparent
+  ExtraData:
+    {}
+  AssetDataMap:
+    Scene: !<own> f5720c05-e169-494e-ad62-3f5be589e09b
+  DependentFiles:
+    []
+  ImporterSettings: !<D3FileImporterSettingsBase>
+    UseLegacyImporter: false
+    WithMaterials: true
+    NamingConvention: ByCategorySanitizeV2
+    PersistentIdGenerationAlgorithm: DescriptorBasedV2
+  CompressionSettings: !<ComplexCompressionSettings>
+    Presets:
+      None Compression: !<FileCompressionSettings>
+        {}
+    ExtensionMappings:
+      mesh: None Compression
+    Overrides:
+      {}
+- !<SceneObject/347fbd4f-8520-4a7e-6c85-e4e2e4f1815d>
+  PrefabRemaps:
+    []
+  Name: IndicatorRingThin
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> f90aa3a2-fe56-4a7a-44ab-42389c26d220
+  Components:
+    []
+- !<RenderMeshVisual/890678c7-c97c-459d-575f-2ce0a45d0ba2>
+  PrefabRemaps:
+    []
+  Name: component_0
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    []
+  Mesh: !<reference> aabbd70f-df15-4f01-974a-a7a13dfcc479
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<ObjectPrefabAssetData/f5720c05-e169-494e-ad62-3f5be589e09b>
+  Prototype: !<ObjectOwner/d3273f02-ec25-4624-90e1-66389b646228>
+    PackagePath: ""
+    objects:
+      - !<own> 347fbd4f-8520-4a7e-6c85-e4e2e4f1815d
+- !<SceneObject/f90aa3a2-fe56-4a7a-44ab-42389c26d220>
+  PrefabRemaps:
+    []
+  Name: ""
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 890678c7-c97c-459d-575f-2ce0a45d0ba2
