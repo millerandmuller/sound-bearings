@@ -131,7 +131,7 @@ export class Bearings extends BaseScriptComponent {
       alarm: this.alarmIndicator
     }
     this.sources.all.forEach((s) => this.elements.push(this.makeElement(s.id, roots[s.id])))
-    this.caption = new Label(this.camera, "CaptionLine", 54, 36, STYLE_LIGHT)
+    this.caption = new Label(this.camera, "CaptionLine", 54, 46, STYLE_LIGHT)
     this.caption.root.getTransform().setLocalPosition(new vec3(0, CAPTION_HEIGHT_CM, -CAPTION_DISTANCE_CM))
     this.caption.root.getTransform().setLocalScale(new vec3(CAPTION_SCALE, CAPTION_SCALE, CAPTION_SCALE))
     this.caption.setAlpha(0)

@@ -1,0 +1,64 @@
+- !<AssetImportMetadata/2cf6fe7d-3502-4fc8-8c79-4b6f0a6b3305>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> e41e2e5f-0ccd-4e31-9033-9040773a6335
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> e41e2e5f-0ccd-4e31-9033-9040773a6335
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> 8bc42286-a530-4dab-8776-8d3098f26e28
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/8bc42286-a530-4dab-8776-8d3098f26e28>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  VersionPrerelease: ""
+  UpdateOrder: 0
+  ComponentUid: 1d4bed4d-3fdf-43b9-9cc4-661ff8dcbca4
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    bearings: false
+    camera: false
+    focusHeight: false
+    focusWidth: false
+    replaySize: false
+    sources: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - sources: !<MappingBased.AssignableType_1> 00000000-0000-0000-0000-000000000000
+      bearings: !<MappingBased.AssignableType_2> 00000000-0000-0000-0000-000000000000
+      camera: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      focusWidth: !<float> 8.000000
+      focusHeight: !<float> 5.000000
+      replaySize: !<float> 4.000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input AssignableType_1 sources
+    - // @input AssignableType_2 bearings
+    - '// @input SceneObject camera {"hint":"The Camera Object. The panel is parented to it so it follows the view."}'
+    - '// @ui {"widget":"separator"}'
+    - '// @ui {"widget":"group_start", "label":"Settings"}'
+    - '// @input float focusWidth = 8 {"hint":"Width of the Focus button in cm."}'
+    - '// @input float focusHeight = 5 {"hint":"Height of the Focus button in cm."}'
+    - '// @input float replaySize = 4 {"hint":"Width and height of the smaller Replay button in cm."}'
+    - '// @ui {"widget":"group_end"}'

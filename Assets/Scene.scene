@@ -971,6 +971,29 @@
     - !<own> 3606f91b-4612-45dc-a2c1-71140563e5d7
   Components:
     []
+- !<ScriptComponent/3138287d-c129-46a9-9e2e-3b6c58c3d8e4>
+  PrefabRemaps:
+    []
+  Name: Focus
+  Enabled: true
+  ScriptAsset: !<reference> e41e2e5f-0ccd-4e31-9033-9040773a6335
+  ScriptInputsDefault:
+    focusWidth: true
+    focusHeight: true
+    replaySize: true
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      sources: !<MappingBased.AssignableType_1> afcc4d05-4dd7-47b1-aef3-5d430319b7b4
+      bearings: !<MappingBased.AssignableType_2> d5368fee-e031-43f9-8ff4-219e337d4206
+      camera: !<reference.SceneObject> 00000000-0000-0065-0000-000000000064
+      focusWidth: !<float> 8.000000
+      focusHeight: !<float> 5.000000
+      replaySize: !<float> 4.000000
+  ScriptTypes:
+    "":
+      {}
 - !<RenderMeshVisual/335c5f8b-2917-49e8-8af5-220696e9bc09>
   PrefabRemaps:
     []
@@ -1055,7 +1078,7 @@
   LocalTransform: !<TransformEntity>
     Position: {x: 0.000000, y: 0.000000, z: 0.000000}
     Rotation: {x: 0.000000, y: 0.000000, z: -90.000000}
-    Scale: {x: 4.500000, y: 7.000000, z: 4.500000}
+    Scale: {x: 3.500000, y: 5.500000, z: 3.500000}
     HasSegmentScaleCompensation: false
   Children:
     []
@@ -2028,6 +2051,7 @@
   Components:
     - !<own> afcc4d05-4dd7-47b1-aef3-5d430319b7b4
     - !<own> d5368fee-e031-43f9-8ff4-219e337d4206
+    - !<own> 3138287d-c129-46a9-9e2e-3b6c58c3d8e4
 - !<RenderMeshVisual/84d51e1f-5034-46a4-89eb-71c777db3b14>
   PrefabRemaps:
     []

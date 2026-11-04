@@ -2,6 +2,8 @@
 DECISION_LOG.md
 .virtual-scene.json
 .claude/last_cwd
+.claude/.env_checked.*
+Plugins/
 
 # Shipped by Lens Studio
 
