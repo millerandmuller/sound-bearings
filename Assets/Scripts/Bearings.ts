@@ -13,7 +13,8 @@ const RAD = Math.PI / 180
 const MORPH_SECONDS = 0.25
 const FOLLOW_RATE = 25 // 1/s, how quickly the element settles on its target
 const FAINT_ALPHA = 0.3 // held ring after its sound goes silent
-const DIMMED_ALPHA = 0.3 // everything but the focused sound
+const DIMMED_ALPHA = 0.3 // rings and arrows of everything but the focused sound
+const DIMMED_TAG_ALPHA = 0.5 // their tag text stays readable
 const SIDE_FLIP_MIN_YAW = 5 // degrees; ignore sign noise right at the centre
 const SIDE_FLIP_MAX_YAW = 90 // a source behind the user never flips the arrow to the other side
 const MAX_TILT = 60 // degrees the arrow may tilt up or down
@@ -329,7 +330,8 @@ export class Bearings extends BaseScriptComponent {
     // next to the arrow (on the line from the arrow towards the centre of the view). Scaled with
     // distance so it stays readable.
     e.tag.setText(e.mode === "ring" ? state.ringTag : state.arrowTag)
-    e.tag.setAlpha(alpha)
+    const dimmed = focused === false && this.sources.focused !== null && e.id !== "alarm"
+    e.tag.setAlpha(dimmed ? e.vis * DIMMED_TAG_ALPHA : alpha)
     e.tag.setStyle(e.id === "alarm" ? STYLE_WARNING : held ? STYLE_FOCUS : STYLE_LIGHT)
     const distance = e.pos.distance(camPos)
     const tagScale = clamp(distance / 110, 1, 3.5) * (focused ? 1.3 : 1)

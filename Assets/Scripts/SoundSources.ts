@@ -34,14 +34,14 @@ const bump = (x: number, length: number): number => (x >= 0 && x < length ? Math
 const ENVELOPES: Record<SourceId, (u: number, d: number) => number> = {
   kettle: (u, d) => Math.min(1, u / 2) * (0.88 + 0.12 * Math.sin(u * 3)) * Math.min(1, (d - u) / 0.4),
   doorbell: (u) => Math.max(0.2, Math.exp(-0.9 * (u % 3))),
-  person: (u) => 0.35 + 0.65 * Math.max(bump(u, 0.7), bump(u - 1.5, 0.7)), // calls "Mara?" twice
+  person: (u) => 0.35 + 0.65 * Math.max(bump(u - 0.1, 0.7), bump(u - 1.6, 0.7)), // Mara.wav says "Mara?" about 0.1 to 0.8 s into the clip; cued twice
   alarm: (u) => {
     const c = u % 1.57 // three beeps then a pause, matching SmokeAlarm.wav
     return c % 0.34 < 0.22 && c < 1.02 ? 1 : 0.35
   }
 }
 
-// When each clip starts. "Mara?" is a short clip, so it is cued twice inside its window.
+// When each clip starts. Mara.wav is 2.8 s with one "Mara?" near its start, so it is cued twice inside its 3 s window.
 const CUES: ReadonlyArray<[SourceId, number]> = [
   ["kettle", 3],
   ["doorbell", 12],
