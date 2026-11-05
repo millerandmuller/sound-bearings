@@ -59,6 +59,6 @@
     - '// @ui {"widget":"separator"}'
     - '// @ui {"widget":"group_start", "label":"Settings"}'
     - '// @input float focusWidth = 8 {"hint":"Width of the Focus button in cm."}'
-    - '// @input float focusHeight = 5 {"hint":"Height of the Focus button in cm."}'
+    - '// @input float focusHeight = 4.5 {"hint":"Height of the Focus button in cm."}'
     - '// @input float replaySize = 4 {"hint":"Width and height of the smaller Replay button in cm."}'
     - '// @ui {"widget":"group_end"}'

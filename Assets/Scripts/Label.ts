@@ -25,6 +25,11 @@ export const STYLE_LIGHT: LabelStyle = {
   background: new vec4(0.86, 0.94, 1.0, 1),
   foreground: new vec4(0.1, 0.22, 0.45, 1)
 }
+// The focused, sounding source: the brightest thing on screen.
+export const STYLE_FOCUS: LabelStyle = {
+  background: new vec4(1.0, 1.0, 1.0, 1),
+  foreground: new vec4(0.05, 0.15, 0.4, 1)
+}
 export const STYLE_WARNING: LabelStyle = {
   background: new vec4(1.0, 0.8, 0.52, 1),
   foreground: new vec4(0.5, 0.14, 0.02, 1)
@@ -81,6 +86,7 @@ export class Label {
   private style: LabelStyle
   private alpha = 1
   private shown = ""
+  private plateSize = new vec2(1, 1)
 
   constructor(parent: SceneObject, name: string, textSize: number, maxChars: number, style: LabelStyle) {
     this.textSize = textSize
@@ -109,6 +115,11 @@ export class Label {
     return this.shown
   }
 
+  /** Plate size in cm at scale 1, so callers can place the label against something. */
+  get size(): vec2 {
+    return this.plateSize
+  }
+
   setText(content: string): void {
     if (content === this.shown) return
     this.shown = content
@@ -120,6 +131,7 @@ export class Label {
       longest * AVG_CHAR_EM * em + 2 * PAD_X_EM * em,
       lines.length * LINE_HEIGHT_EM * em + 2 * PAD_Y_EM * em
     )
+    this.plateSize = size
     if (this.plate) {
       this.plate.size = size
       this.plate.cornerRadius = Math.min(size.x, size.y) * 0.25

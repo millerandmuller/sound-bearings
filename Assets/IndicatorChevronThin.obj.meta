@@ -1,0 +1,85 @@
+- !<AssetImportMetadata/08abe491-32bb-4e25-947d-b17e9aa1c12d>
+  ImportedAssetIds:
+    26ba073d67b9d0dd: !<reference> a513352b-fd28-4083-93f2-a9a6111b7927
+    6681b3f8f8f5ede3: !<reference> 21908a67-8925-4b3a-b6c0-59a4d34a126d
+    Meshes/Mesh 1: !<reference> 161cc7a4-5c78-4451-ab35-b36c8d22ccf5
+    Scene: !<reference> ae4c4e4e-87b1-412c-b583-5f7ccaf1b3fd
+    cb16681e7113a59e: !<reference> 99292c53-ecaf-450e-8e0e-3080d181fa64
+  ImporterName: ObjImporter
+  PrimaryAsset: !<reference> ae4c4e4e-87b1-412c-b583-5f7ccaf1b3fd
+  PackageType: LegacyPackage
+  LegacyPackagePolicy: CanBeUnpackedTransparent
+  ExtraData:
+    {}
+  AssetDataMap:
+    Scene: !<own> 4e621b93-1f14-466c-a72e-a86bd9ded140
+  DependentFiles:
+    []
+  ImporterSettings: !<D3FileImporterSettingsBase>
+    UseLegacyImporter: false
+    WithMaterials: true
+    NamingConvention: ByCategorySanitizeV2
+    PersistentIdGenerationAlgorithm: DescriptorBasedV2
+  CompressionSettings: !<ComplexCompressionSettings>
+    Presets:
+      None Compression: !<FileCompressionSettings>
+        {}
+    ExtensionMappings:
+      mesh: None Compression
+    Overrides:
+      {}
+- !<SceneObject/21908a67-8925-4b3a-493f-a65b2cb5ed92>
+  PrefabRemaps:
+    []
+  Name: ""
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 99292c53-ecaf-450e-71f1-cf7f2e7e059b
+- !<ObjectPrefabAssetData/4e621b93-1f14-466c-a72e-a86bd9ded140>
+  Prototype: !<ObjectOwner/6c90be8f-37f0-4b30-8263-825108831007>
+    PackagePath: ""
+    objects:
+      - !<own> a513352b-fd28-4083-6c0d-5659eee486d8
+- !<RenderMeshVisual/99292c53-ecaf-450e-71f1-cf7f2e7e059b>
+  PrefabRemaps:
+    []
+  Name: component_0
+  Enabled: true
+  RenderOrder: 0
+  StretchMode: Stretch
+  VerticalAlignment: Center
+  HorizontalAlignment: Center
+  MeshShadowMode: None
+  ShadowColor: {x: 1.000000, y: 1.000000, z: 1.000000, w: 1.000000}
+  ShadowDensity: 1.000000
+  Materials:
+    []
+  Mesh: !<reference> 161cc7a4-5c78-4451-ab35-b36c8d22ccf5
+  Skin: !<reference> 00000000-0000-0000-0000-000000000000
+  BlendShapesEnabled: true
+  BlendNormals: false
+  BlendShapes:
+    {}
+- !<SceneObject/a513352b-fd28-4083-6c0d-5659eee486d8>
+  PrefabRemaps:
+    []
+  Name: IndicatorChevronThin
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    - !<own> 21908a67-8925-4b3a-493f-a65b2cb5ed92
+  Components:
+    []

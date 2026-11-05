@@ -11,19 +11,29 @@ import {addContentToElement} from "SpectaclesUIKit.lspkg/Scripts/Components/Cont
 import {Bearings} from "./Bearings"
 import {SoundSources, SourceId} from "./SoundSources"
 import {createBackground} from "./Label"
+import {RoundedRectangle} from "SpectaclesUIKit.lspkg/Scripts/Visuals/RoundedRectangle/RoundedRectangle"
 
 const PANEL_DISTANCE_CM = 60
-const PANEL_HEIGHT_CM = -14.5 // a little below eye level, clear of the caption line above it
-const PANEL_SIZE = new vec2(16.5, 8)
-// Deep blue, not black: the buttons carry white labels from the theme, so the plate must be darker
-// than them or they wash out. Black would vanish on an additive display; this stays visible.
-const PANEL_COLOUR = new vec4(0.18, 0.34, 0.6, 0.85)
+const PANEL_HEIGHT_CM = -16.2 // low in the view, clear of the caption line above it
+const PAD_CM = 0.7
+const GAP_CM = 0.9
+// No dark fills (the display is additive): a faint light strip, and light plates under each button.
+// The UI Kit button itself is the Ghost style (no fill of its own); its hit target is the button's size.
+const PANEL_COLOUR = new vec4(0.9, 0.93, 0.97, 0.45)
+const PLATE_IDLE = new vec4(0.8, 0.88, 0.98, 1)
+const PLATE_HOVER = new vec4(0.92, 0.96, 1.0, 1)
+const PLATE_ON = new vec4(1, 1, 1, 1) // Focus held
+const LABEL_COLOUR = new vec4(0.1, 0.22, 0.45, 1) // deep blue, never black
+const PLATE_OVERSIZE_CM = 0.3
+const PLATE_CORNER_CM = 0.3
 const BUTTON_DEPTH_CM = 1
 const BUTTON_Z_CM = 0.6
-// The plate has depth test off (so nothing in the room hides it), so it is drawn by render order:
-// after the room (0), before the buttons and their labels, which would otherwise be painted over.
-const PLATE_RENDER_ORDER = 5
+// The strip and plates have depth test off, so they are drawn by render order: the strip first, the
+// button visual, then the light plate over it (hiding the Ghost hover fill), then the label on top.
+const PANEL_RENDER_ORDER = 5
 const BUTTON_RENDER_ORDER = 6
+const PLATE_RENDER_ORDER = 7
+const LABEL_RENDER_ORDER = 8
 const PULSE_SECONDS = 0.3
 const PULSE_SCALE = 0.18
 
@@ -44,7 +54,7 @@ export class Focus extends BaseScriptComponent {
   focusWidth: number = 8
   @input
   @hint("Height of the Focus button in cm.")
-  focusHeight: number = 5
+  focusHeight: number = 4.5
   @input
   @hint("Width and height of the smaller Replay button in cm.")
   replaySize: number = 4
@@ -52,6 +62,11 @@ export class Focus extends BaseScriptComponent {
 
   private focusButton: Button
   private replayButton: Button
+  private focusPlate: RoundedRectangle
+  private replayPlate: RoundedRectangle
+  private paintedHolding = false
+  private focusHover = false
+  private replayHover = false
   private panel: SceneObject
   private pulse = 0 // seconds left on the "nothing to focus on" pulse
 
@@ -98,49 +113,81 @@ export class Focus extends BaseScriptComponent {
     this.panel.setParent(this.camera)
     this.panel.layer = this.camera.layer
     this.panel.getTransform().setLocalPosition(new vec3(0, PANEL_HEIGHT_CM, -PANEL_DISTANCE_CM))
-    createBackground(this.panel, "PanelPlate", PANEL_SIZE, PANEL_COLOUR, PLATE_RENDER_ORDER)
+    const height = Math.max(this.focusHeight, this.replaySize)
+    const size = new vec2(this.focusWidth + this.replaySize + GAP_CM + 2 * PAD_CM, height + 2 * PAD_CM)
+    createBackground(this.panel, "PanelPlate", size, PANEL_COLOUR, PANEL_RENDER_ORDER)
 
-    const pad = 1.5
-    const focusX = -PANEL_SIZE.x / 2 + pad + this.focusWidth / 2
-    const replayX = PANEL_SIZE.x / 2 - pad - this.replaySize / 2
-    this.focusButton = this.makeButton("FocusButton", "Primary", new vec3(this.focusWidth, this.focusHeight, BUTTON_DEPTH_CM), focusX, "Focus", 48, true)
-    this.replayButton = this.makeButton("ReplayButton", "Secondary", new vec3(this.replaySize, this.replaySize, BUTTON_DEPTH_CM), replayX, "Replay", 28, false)
-    // A toggle button reports a completed pinch through onFinished(explicit). It also fires when this
-    // script sets isOn to keep the look in sync, with explicit=false, which must not count as a pinch.
-    this.focusButton.onFinished.add((explicit: boolean) => {
-      if (explicit) this.pinchFocus()
-    })
+    const focusX = -size.x / 2 + PAD_CM + this.focusWidth / 2
+    const replayX = size.x / 2 - PAD_CM - this.replaySize / 2
+    const focus = this.makeButton("FocusButton", new vec2(this.focusWidth, this.focusHeight), focusX, "Focus", 48)
+    const replay = this.makeButton("ReplayButton", new vec2(this.replaySize, this.replaySize), replayX, "Replay", 28)
+    this.focusButton = focus.button
+    this.focusPlate = focus.plate
+    this.replayButton = replay.button
+    this.replayPlate = replay.plate
+    // Plain buttons: Focus's on-state is the white plate below, not the UI Kit toggle fill (a dark
+    // "selected" fill would show on this additive display).
+    this.focusButton.onTriggerUp.add(() => this.pinchFocus())
     this.replayButton.onTriggerUp.add(() => this.pinchReplay())
+    // Hover highlight is the plate brightening (the Ghost style's own hover fill is hidden under it).
+    this.focusButton.onHoverEnter.add(() => this.setHover(true, true))
+    this.focusButton.onHoverExit.add(() => this.setHover(true, false))
+    this.replayButton.onHoverEnter.add(() => this.setHover(false, true))
+    this.replayButton.onHoverExit.add(() => this.setHover(false, false))
+    this.paintPlates()
   }
 
   private makeButton(
     name: string,
-    style: string,
-    size: vec3,
+    size: vec2,
     x: number,
     label: string,
-    textSize: number,
-    toggleable: boolean
-  ): Button {
+    textSize: number
+  ): {button: Button; plate: RoundedRectangle} {
     const obj = global.scene.createSceneObject(name)
     obj.setParent(this.panel)
     obj.layer = this.panel.layer
     obj.getTransform().setLocalPosition(new vec3(x, 0, BUTTON_Z_CM))
     const button = obj.createComponent(Button.getTypeName()) as Button
-    button.setVariant({theme: "SnapOS3", shape: "Rectangle", style})
-    button.size = size
-    button.setIsToggleable(toggleable) // must precede initialize()
+    button.setVariant({theme: "SnapOS3", shape: "Rectangle", style: "Ghost"})
+    button.size = new vec3(size.x, size.y, BUTTON_DEPTH_CM)
     button.initialize()
     button.renderOrder = BUTTON_RENDER_ORDER
+    // Slightly larger than the button with tighter corners, so no part of the button's own fill shows.
+    const plate = createBackground(obj, name + "Plate", size.add(new vec2(PLATE_OVERSIZE_CM, PLATE_OVERSIZE_CM)), PLATE_IDLE, PLATE_RENDER_ORDER)
+    plate.cornerRadius = PLATE_CORNER_CM
     const content = addContentToElement(obj, {text: label, textSize, contentAlignment: "center"})
-    content.renderOrder = BUTTON_RENDER_ORDER
-    return button
+    content.renderOrder = LABEL_RENDER_ORDER
+    this.useLabelColour(content)
+    return {button, plate}
+  }
+
+  /** UI Kit's per-instance text colour override (an inspector field on ElementContent, no public setter). */
+  private useLabelColour(content: unknown): void {
+    const c = content as {_useTextColorOverride: boolean; _textColorOverride: vec4; _colorsDirty: boolean; applyResolvedColors?: () => void}
+    c._useTextColorOverride = true
+    c._textColorOverride = LABEL_COLOUR
+    c._colorsDirty = true
+    if (c.applyResolvedColors) c.applyResolvedColors()
+  }
+
+  private setHover(isFocus: boolean, on: boolean): void {
+    if (isFocus) this.focusHover = on
+    else this.replayHover = on
+    this.paintPlates()
+  }
+
+  private paintPlates(): void {
+    const holding = this.sources.focused !== null
+    this.paintedHolding = holding
+    this.focusPlate.backgroundColor = holding ? PLATE_ON : this.focusHover ? PLATE_HOVER : PLATE_IDLE
+    this.replayPlate.backgroundColor = this.replayHover ? PLATE_HOVER : PLATE_IDLE
   }
 
   private tick(dt: number): void {
     if (!this.focusButton) return
     const holding = this.sources.focused !== null
-    if (this.focusButton.isOn !== holding) this.focusButton.isOn = holding // Replay can clear Focus
+    if (holding !== this.paintedHolding) this.paintPlates() // Replay can clear Focus
     this.pulse = Math.max(0, this.pulse - dt)
     const k = 1 + PULSE_SCALE * Math.sin((Math.PI * (PULSE_SECONDS - this.pulse)) / PULSE_SECONDS) * (this.pulse > 0 ? 1 : 0)
     this.focusButton.sceneObject.getTransform().setLocalScale(new vec3(k, k, k))

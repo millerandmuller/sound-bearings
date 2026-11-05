@@ -8,6 +8,7 @@
     - !<own> eef5d3a0-659e-4b99-b14c-1df572ba4db0
     - !<own> 83f8f9c7-3364-4474-936b-91219366caa7
     - !<own> 0e8a556e-ecde-4f61-9057-4769423da3be
+    - !<own> 3127005a-adb2-4549-905d-3d8659d82931
   layers: !<Layers/267ee9a7-aff2-4f9d-9a49-f71214747d03>
     userLayers:
       - id: 1
@@ -268,7 +269,7 @@
   ShadowDensity: 1.000000
   Materials:
     - !<reference> 1fc1b4b4-3704-4fb7-98f5-9d7ff5afb71f
-  Mesh: !<reference> a5b928c9-390c-4a5e-a8e2-74a3f9fa127a
+  Mesh: !<reference> 161cc7a4-5c78-4451-ab35-b36c8d22ccf5
   Skin: !<reference> 00000000-0000-0000-0000-000000000000
   BlendShapesEnabled: true
   BlendNormals: false
@@ -623,6 +624,22 @@
   MaxDistance: 500.000000
   EnableDirectivityEffect: false
   EnablePositionEffect: true
+- !<ScriptComponent/1426bd3b-4ae7-4224-81b1-bb2a564f3c95>
+  PrefabRemaps:
+    []
+  Name: MessagingBridge
+  Enabled: true
+  ScriptAsset: !<reference> 9aa407db-2872-4afc-a162-cf7faf2a0f29
+  ScriptInputsDefault:
+    {}
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      {}
+  ScriptTypes:
+    "":
+      {}
 - !<SceneObject/181c239f-175e-4912-94fc-d37a2599b2d6>
   PrefabRemaps:
     []
@@ -987,6 +1004,21 @@
     - !<own> 3606f91b-4612-45dc-a2c1-71140563e5d7
   Components:
     []
+- !<SceneObject/3127005a-adb2-4549-905d-3d8659d82931>
+  PrefabRemaps:
+    []
+  Name: LEAF Plugin Bridge
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> 1426bd3b-4ae7-4224-81b1-bb2a564f3c95
 - !<ScriptComponent/3138287d-c129-46a9-9e2e-3b6c58c3d8e4>
   PrefabRemaps:
     []
@@ -1411,7 +1443,7 @@
   ShadowDensity: 1.000000
   Materials:
     - !<reference> 2843431d-7243-4a4f-a529-6b95759647b4
-  Mesh: !<reference> a5b928c9-390c-4a5e-a8e2-74a3f9fa127a
+  Mesh: !<reference> 161cc7a4-5c78-4451-ab35-b36c8d22ccf5
   Skin: !<reference> 00000000-0000-0000-0000-000000000000
   BlendShapesEnabled: true
   BlendNormals: false
@@ -1785,7 +1817,7 @@
   ShadowDensity: 1.000000
   Materials:
     - !<reference> 2843431d-7243-4a4f-a529-6b95759647b4
-  Mesh: !<reference> a5b928c9-390c-4a5e-a8e2-74a3f9fa127a
+  Mesh: !<reference> 161cc7a4-5c78-4451-ab35-b36c8d22ccf5
   Skin: !<reference> 00000000-0000-0000-0000-000000000000
   BlendShapesEnabled: true
   BlendNormals: false
@@ -2082,7 +2114,7 @@
   ShadowDensity: 1.000000
   Materials:
     - !<reference> 2843431d-7243-4a4f-a529-6b95759647b4
-  Mesh: !<reference> a5b928c9-390c-4a5e-a8e2-74a3f9fa127a
+  Mesh: !<reference> 161cc7a4-5c78-4451-ab35-b36c8d22ccf5
   Skin: !<reference> 00000000-0000-0000-0000-000000000000
   BlendShapesEnabled: true
   BlendNormals: false

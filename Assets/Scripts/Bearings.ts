@@ -6,7 +6,7 @@
 // Arrow and ring are ONE element per source: as the user turns, the arrow slides along the edge
 // and morphs into the ring (arrow shrinks while the ring grows), it is never swapped.
 import {SoundSources, SourceId, SourceState} from "./SoundSources"
-import {Label, STYLE_LIGHT, STYLE_WARNING} from "./Label"
+import {Label, STYLE_FOCUS, STYLE_LIGHT, STYLE_WARNING} from "./Label"
 
 const DEG = 180 / Math.PI
 const RAD = Math.PI / 180
@@ -17,6 +17,16 @@ const DIMMED_ALPHA = 0.3 // everything but the focused sound
 const SIDE_FLIP_MIN_YAW = 5 // degrees; ignore sign noise right at the centre
 const SIDE_FLIP_MAX_YAW = 90 // a source behind the user never flips the arrow to the other side
 const MAX_TILT = 60 // degrees the arrow may tilt up or down
+// The arrow is a thin chevron outline with the same stroke as the rings (about 0.9 cm at 110 cm), so
+// ring and arrow read as one element. Size in cm; the mesh is a unit chevron.
+const ARROW_SIZE_CM = 7
+const ARROW_PULSE = 0.3 // extra size at full loudness
+const TAG_GAP_CM = 0.8
+// The focused, sounding ring is the brightest thing on screen: pure white, larger, with a halo.
+const FOCUS_COLOUR = new vec4(1, 1, 1, 1)
+const FOCUS_RING_SCALE = 1.15
+const HALO_SCALE = 1.22
+const HALO_ALPHA = 0.55
 // Caption line: same distance as the control panel (60 cm) and just above it, so it sits at the
 // bottom of the view. Scaled by 60/110 so the text keeps the angular size it is tuned for at 110 cm.
 const CAPTION_HEIGHT_CM = -8.5
@@ -39,6 +49,8 @@ interface Element {
   readonly ringBase: number // cm, authored ring size
   readonly ringMat: Material
   readonly arrowMat: Material
+  readonly halo: SceneObject
+  readonly haloMat: Material
   readonly baseColor: vec4
   readonly tag: Label
   mode: "ring" | "arrow"
@@ -146,6 +158,17 @@ export class Bearings extends BaseScriptComponent {
     const baseColor = ringVisual.mainMaterial.mainPass.baseColor
     ringVisual.mainMaterial = ringVisual.mainMaterial.clone()
     arrowVisual.mainMaterial = arrowVisual.mainMaterial.clone()
+    const arrow = this.child(pivot, "Arrow")
+    arrow.getTransform().setLocalRotation(quat.quatIdentity())
+    arrow.getTransform().setLocalScale(new vec3(ARROW_SIZE_CM, ARROW_SIZE_CM, ARROW_SIZE_CM))
+    // Halo: a second, slightly larger copy of the ring, shown only while this source is held.
+    const halo = global.scene.createSceneObject("Halo")
+    halo.setParent(root)
+    halo.layer = ring.layer
+    const haloVisual = halo.createComponent("Component.RenderMeshVisual") as RenderMeshVisual
+    haloVisual.mesh = ringVisual.mesh
+    haloVisual.mainMaterial = ringVisual.mainMaterial.clone()
+    halo.enabled = false
     const tag = new Label(root, "Tag", 48, 24, id === "alarm" ? STYLE_WARNING : STYLE_LIGHT)
     return {
       id,
@@ -155,6 +178,8 @@ export class Bearings extends BaseScriptComponent {
       ringBase: ring.getTransform().getLocalScale().x,
       ringMat: ringVisual.mainMaterial,
       arrowMat: arrowVisual.mainMaterial,
+      halo,
+      haloMat: haloVisual.mainMaterial,
       baseColor,
       tag,
       mode: "arrow",
@@ -279,27 +304,46 @@ export class Bearings extends BaseScriptComponent {
     const alpha = this.alphaOf(e)
     e.root.enabled = alpha > 0.01
     if (!e.root.enabled) return
-    const pulse = 1 + 0.5 * e.loud
-    const ringScale = e.ringBase * (0.4 + 0.6 * e.morph) * (focused ? 1.12 : 1) * (1 + 0.06 * e.loud)
+    const state = this.sources.get(e.id)
+    const held = focused && state.active // the focused sound is sounding right now
+    const pulse = 1 + ARROW_PULSE * e.loud
+    const ringScale = e.ringBase * (0.4 + 0.6 * e.morph) * (held ? FOCUS_RING_SCALE : 1) * (1 + 0.06 * e.loud)
     e.ring.enabled = e.morph > 0.02
     e.ring.getTransform().setLocalScale(new vec3(ringScale, ringScale, ringScale))
     const arrowScale = (1 - e.morph) * pulse
     e.pivot.enabled = e.morph < 0.98
     e.pivot.getTransform().setLocalScale(new vec3(arrowScale, arrowScale, arrowScale))
     e.pivot.getTransform().setLocalRotation(quat.fromEulerAngles(0, 0, e.phi * RAD))
-    const c = e.baseColor
+    const c = held && e.id !== "alarm" ? FOCUS_COLOUR : e.baseColor
     e.ringMat.mainPass.baseColor = new vec4(c.r, c.g, c.b, alpha)
     e.arrowMat.mainPass.baseColor = new vec4(c.r, c.g, c.b, alpha)
+    const haloOn = held && e.mode === "ring" && e.morph > 0.5
+    e.halo.enabled = haloOn
+    if (haloOn) {
+      const h = ringScale * HALO_SCALE
+      e.halo.getTransform().setLocalScale(new vec3(h, h, h))
+      e.haloMat.mainPass.baseColor = new vec4(c.r, c.g, c.b, alpha * HALO_ALPHA)
+    }
 
-    // Tag: sits under the element, larger when focused, scaled with distance so it stays readable.
-    const state = this.sources.get(e.id)
+    // Tag, attached to the element and moving with it: under the ring, or just inside the view edge
+    // next to the arrow (on the line from the arrow towards the centre of the view). Scaled with
+    // distance so it stays readable.
     e.tag.setText(e.mode === "ring" ? state.ringTag : state.arrowTag)
     e.tag.setAlpha(alpha)
+    e.tag.setStyle(e.id === "alarm" ? STYLE_WARNING : held ? STYLE_FOCUS : STYLE_LIGHT)
     const distance = e.pos.distance(camPos)
     const tagScale = clamp(distance / 110, 1, 3.5) * (focused ? 1.3 : 1)
-    const below = 6 * (1 - e.morph) + (ringScale / 2) * e.morph + 3.5 * tagScale // clear of the arrow or ring edge
+    const halfW = (e.tag.size.x / 2) * tagScale
+    const halfH = (e.tag.size.y / 2) * tagScale
+    const ringRadius = (ringScale / 2) * (haloOn ? HALO_SCALE : 1)
+    const underRing = new vec2(0, -(ringRadius + halfH + TAG_GAP_CM * tagScale))
+    const dx = Math.cos(e.phi * RAD)
+    const dy = Math.sin(e.phi * RAD)
+    const inward = (ARROW_SIZE_CM * 0.5 * pulse) + Math.abs(dx) * halfW + Math.abs(dy) * halfH + TAG_GAP_CM
+    const besideArrow = new vec2(-dx * inward, -dy * inward)
+    const at = besideArrow.add(underRing.sub(besideArrow).uniformScale(e.morph))
     e.tag.root.getTransform().setLocalScale(new vec3(tagScale, tagScale, tagScale))
-    e.tag.root.getTransform().setLocalPosition(new vec3(0, -below, 0.3))
+    e.tag.root.getTransform().setLocalPosition(new vec3(at.x, at.y, 0.3))
   }
 
   private updateCaption(dt: number): void {
