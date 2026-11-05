@@ -32,12 +32,12 @@ const bump = (x: number, length: number): number => (x >= 0 && x < length ? Math
 
 // Loudness envelopes, u = seconds since the window opened, d = window length.
 const ENVELOPES: Record<SourceId, (u: number, d: number) => number> = {
-  kettle: (u, d) => Math.min(1, u / 2) * (0.88 + 0.12 * Math.sin(u * 3)) * Math.min(1, (d - u) / 0.4),
-  doorbell: (u) => Math.max(0.2, Math.exp(-0.9 * (u % 3))),
+  kettle: (u, d) => (0.7 + 0.3 * Math.min(1, u / 8)) * Math.min(1, (d - u) / 0.4), // kettle.wav builds towards the boil
+  doorbell: (u) => Math.max(0.2, u < 1 ? 1 - 0.2 * u : 0.8 * Math.exp(-1.1 * (u - 1))), // doorbell.wav: two tones, then the ring dies away
   person: (u) => 0.35 + 0.65 * Math.max(bump(u - 0.1, 0.7), bump(u - 1.6, 0.7)), // Mara.wav says "Mara?" about 0.1 to 0.8 s into the clip; cued twice
   alarm: (u) => {
-    const c = u % 1.57 // three beeps then a pause, matching SmokeAlarm.wav
-    return c % 0.34 < 0.22 && c < 1.02 ? 1 : 0.35
+    const c = u % 4 // smoke-alarm.wav: three 0.5 s beeps a second apart, then a 1.5 s pause
+    return c < 2.5 && c % 1 < 0.5 ? 1 : 0.35
   }
 }
 

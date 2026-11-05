@@ -23,6 +23,13 @@ const MAX_TILT = 60 // degrees the arrow may tilt up or down
 const ARROW_SIZE_CM = 7
 const ARROW_PULSE = 0.3 // extra size at full loudness
 const TAG_GAP_CM = 0.8
+// The control strip (Focus.ts defaults: 60 cm ahead, centred 16.2 cm below eye level, 14.3 x 5.9 cm).
+// Tags never overlap it, and a ring in the lower part of the view puts its tag above itself.
+const STRIP_TOP_TAN = (16.2 - 2.95) / 60
+const STRIP_HALF_TAN = 7.15 / 60
+const STRIP_MARGIN_CM = 0.5
+const TAG_ABOVE_BELOW_TAN = 0.09 // ring more than ~5 degrees below the view centre: tag goes above
+const TAG_ABOVE_BACK_TAN = 0.05 // and returns under the ring once it is back above ~3 degrees
 // The focused, sounding ring is the brightest thing on screen: pure white, larger, with a halo.
 const FOCUS_COLOUR = new vec4(1, 1, 1, 1)
 const FOCUS_RING_SCALE = 1.15
@@ -60,6 +67,7 @@ interface Element {
   vis: number // 0..1, fades over fadeSeconds
   loud: number // smoothed loudness
   wasActive: boolean
+  tagAbove: boolean // ring tag sits above the ring (ring is low in the view); has hysteresis
   pos: vec3
   phi: number // degrees, direction the arrow points on screen
   bearing: Bearing
@@ -189,6 +197,7 @@ export class Bearings extends BaseScriptComponent {
       vis: 0,
       loud: 0,
       wasActive: false,
+      tagAbove: false,
       pos: root.getTransform().getWorldPosition(),
       phi: 0,
       bearing: {yaw: 0, pitch: 0, angle: 180, mode: "arrow", side: 1}
@@ -343,7 +352,18 @@ export class Bearings extends BaseScriptComponent {
     const dy = Math.sin(e.phi * RAD)
     const inward = (ARROW_SIZE_CM * 0.5 * pulse) + Math.abs(dx) * halfW + Math.abs(dy) * halfH + TAG_GAP_CM
     const besideArrow = new vec2(-dx * inward, -dy * inward)
-    const at = besideArrow.add(underRing.sub(besideArrow).uniformScale(e.morph))
+    // View-space position of the element (the root is parallel to the camera, so offsets add directly).
+    const rel = this.camera.getTransform().getInvertedWorldTransform().multiplyPoint(e.pos)
+    const depth = Math.max(1, -rel.z)
+    const lowTan = -rel.y / depth
+    if (e.morph > 0.5) e.tagAbove = lowTan > (e.tagAbove ? TAG_ABOVE_BACK_TAN : TAG_ABOVE_BELOW_TAN)
+    const abovePos = new vec2(0, ringRadius + halfH + TAG_GAP_CM * tagScale)
+    const ringTagPos = e.tagAbove ? abovePos : underRing
+    const at = besideArrow.add(ringTagPos.sub(besideArrow).uniformScale(e.morph))
+    // Keep the tag clear of the control strip: lift it if its bottom edge would sit inside the strip.
+    const stripTop = -STRIP_TOP_TAN * depth + STRIP_MARGIN_CM * tagScale
+    const overlapsX = Math.abs(rel.x + at.x) < STRIP_HALF_TAN * depth + halfW
+    if (overlapsX && rel.y + at.y - halfH < stripTop) at.y = stripTop + halfH - rel.y
     e.tag.root.getTransform().setLocalScale(new vec3(tagScale, tagScale, tagScale))
     e.tag.root.getTransform().setLocalPosition(new vec3(at.x, at.y, 0.3))
   }

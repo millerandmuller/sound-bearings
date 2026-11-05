@@ -22,7 +22,7 @@ export interface LabelStyle {
 }
 
 export const STYLE_LIGHT: LabelStyle = {
-  background: new vec4(0.86, 0.94, 1.0, 1),
+  background: new vec4(0.95, 0.98, 1.0, 1),
   foreground: new vec4(0.1, 0.22, 0.45, 1)
 }
 // The focused, sounding source: the brightest thing on screen.
