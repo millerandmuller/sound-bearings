@@ -10,7 +10,7 @@ import {Button} from "SpectaclesUIKit.lspkg/Scripts/Components/Button/Button"
 import {addContentToElement} from "SpectaclesUIKit.lspkg/Scripts/Components/Content/ElementContentFactory"
 import {Bearings} from "./Bearings"
 import {SoundSources, SourceId} from "./SoundSources"
-import {createBackground} from "./Label"
+import {createBackground, OUTLINE_COLOUR} from "./Label"
 import {RoundedRectangle} from "SpectaclesUIKit.lspkg/Scripts/Visuals/RoundedRectangle/RoundedRectangle"
 
 const PANEL_DISTANCE_CM = 60
@@ -23,7 +23,9 @@ const PANEL_COLOUR = new vec4(0.9, 0.93, 0.97, 0.45)
 const PLATE_IDLE = new vec4(0.8, 0.88, 0.98, 1)
 const PLATE_HOVER = new vec4(0.92, 0.96, 1.0, 1)
 const PLATE_ON = new vec4(1, 1, 1, 1) // Focus held
-const LABEL_COLOUR = new vec4(0.1, 0.22, 0.45, 1) // deep blue, never black
+const LABEL_COLOUR = OUTLINE_COLOUR // deep blue, never black
+const DIMMED_PANEL_ALPHA = 0.4 // the whole strip, while a ring overlaps it
+const PANEL_FADE_RATE = 10
 const PLATE_OVERSIZE_CM = 0.3
 const PLATE_CORNER_CM = 0.3
 const BUTTON_DEPTH_CM = 1
@@ -62,7 +64,10 @@ export class Focus extends BaseScriptComponent {
 
   private focusButton: Button
   private replayButton: Button
+  private panelPlate: RoundedRectangle
   private focusPlate: RoundedRectangle
+  private labels: unknown[] = []
+  private panelAlpha = 1
   private replayPlate: RoundedRectangle
   private paintedHolding = false
   private focusHover = false
@@ -115,7 +120,7 @@ export class Focus extends BaseScriptComponent {
     this.panel.getTransform().setLocalPosition(new vec3(0, PANEL_HEIGHT_CM, -PANEL_DISTANCE_CM))
     const height = Math.max(this.focusHeight, this.replaySize)
     const size = new vec2(this.focusWidth + this.replaySize + GAP_CM + 2 * PAD_CM, height + 2 * PAD_CM)
-    createBackground(this.panel, "PanelPlate", size, PANEL_COLOUR, PANEL_RENDER_ORDER)
+    this.panelPlate = createBackground(this.panel, "PanelPlate", size, PANEL_COLOUR, PANEL_RENDER_ORDER)
 
     const focusX = -size.x / 2 + PAD_CM + this.focusWidth / 2
     const replayX = size.x / 2 - PAD_CM - this.replaySize / 2
@@ -158,15 +163,17 @@ export class Focus extends BaseScriptComponent {
     plate.cornerRadius = PLATE_CORNER_CM
     const content = addContentToElement(obj, {text: label, textSize, contentAlignment: "center"})
     content.renderOrder = LABEL_RENDER_ORDER
-    this.useLabelColour(content)
+    this.useLabelColour(content, 1)
+    this.labels.push(content)
     return {button, plate}
   }
 
   /** UI Kit's per-instance text colour override (an inspector field on ElementContent, no public setter). */
-  private useLabelColour(content: unknown): void {
-    const c = content as {_useTextColorOverride: boolean; _textColorOverride: vec4; _colorsDirty: boolean; applyResolvedColors?: () => void}
+  private useLabelColour(content: unknown, alpha: number): void {
+    const c = content as {_useTextColorOverride: boolean; _textColorOverride: vec4; _colorsDirty: boolean; _opacityFactor: number; applyResolvedColors?: () => void}
     c._useTextColorOverride = true
     c._textColorOverride = LABEL_COLOUR
+    c._opacityFactor = alpha // the label's alpha comes from this multiplier, not from the override colour
     c._colorsDirty = true
     if (c.applyResolvedColors) c.applyResolvedColors()
   }
@@ -184,10 +191,23 @@ export class Focus extends BaseScriptComponent {
     this.replayPlate.backgroundColor = this.replayHover ? PLATE_HOVER : PLATE_IDLE
   }
 
+  /** Dim the whole strip to 40 percent while any ring overlaps it, so the ring stays readable. */
+  private fadePanel(dt: number): void {
+    const target = this.bearings.ringOverStrip ? DIMMED_PANEL_ALPHA : 1
+    const next = this.panelAlpha + (target - this.panelAlpha) * (1 - Math.exp(-PANEL_FADE_RATE * dt))
+    if (next === this.panelAlpha) return
+    this.panelAlpha = Math.abs(next - target) < 0.005 ? target : next
+    this.panelPlate.opacity = this.panelAlpha
+    this.focusPlate.opacity = this.panelAlpha
+    this.replayPlate.opacity = this.panelAlpha
+    this.labels.forEach((l) => this.useLabelColour(l, this.panelAlpha))
+  }
+
   private tick(dt: number): void {
     if (!this.focusButton) return
     const holding = this.sources.focused !== null
     if (holding !== this.paintedHolding) this.paintPlates() // Replay can clear Focus
+    this.fadePanel(dt)
     this.pulse = Math.max(0, this.pulse - dt)
     const k = 1 + PULSE_SCALE * Math.sin((Math.PI * (PULSE_SECONDS - this.pulse)) / PULSE_SECONDS) * (this.pulse > 0 ? 1 : 0)
     this.focusButton.sceneObject.getTransform().setLocalScale(new vec3(k, k, k))

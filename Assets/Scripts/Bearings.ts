@@ -6,7 +6,7 @@
 // Arrow and ring are ONE element per source: as the user turns, the arrow slides along the edge
 // and morphs into the ring (arrow shrinks while the ring grows), it is never swapped.
 import {SoundSources, SourceId, SourceState} from "./SoundSources"
-import {Label, STYLE_FOCUS, STYLE_LIGHT, STYLE_WARNING} from "./Label"
+import {Label, OUTLINE_COLOUR, STYLE_FOCUS, STYLE_LIGHT, STYLE_WARNING} from "./Label"
 
 const DEG = 180 / Math.PI
 const RAD = Math.PI / 180
@@ -57,6 +57,8 @@ interface Element {
   readonly ringBase: number // cm, authored ring size
   readonly ringMat: Material
   readonly arrowMat: Material
+  readonly outline: SceneObject // dark-blue outline behind the arrow
+  readonly outlineMat: Material
   readonly halo: SceneObject
   readonly haloMat: Material
   readonly baseColor: vec4
@@ -67,6 +69,7 @@ interface Element {
   vis: number // 0..1, fades over fadeSeconds
   loud: number // smoothed loudness
   wasActive: boolean
+  overStrip: boolean // the ring overlaps the control strip
   tagAbove: boolean // ring tag sits above the ring (ring is low in the view); has hysteresis
   pos: vec3
   phi: number // degrees, direction the arrow points on screen
@@ -130,6 +133,11 @@ export class Bearings extends BaseScriptComponent {
     return this.element(id).bearing
   }
 
+  /** True while any visible ring overlaps the control strip (Focus dims the strip then). */
+  get ringOverStrip(): boolean {
+    return this.elements.some((e) => e.overStrip && e.root.enabled)
+  }
+
   /** The indicator's current visual state: used by the tests and by Focus. */
   getView(id: SourceId): {mode: "ring" | "arrow"; alpha: number; morph: number; tag: string; position: vec3} {
     const e = this.element(id)
@@ -170,6 +178,14 @@ export class Bearings extends BaseScriptComponent {
     const arrow = this.child(pivot, "Arrow")
     arrow.getTransform().setLocalRotation(quat.quatIdentity())
     arrow.getTransform().setLocalScale(new vec3(ARROW_SIZE_CM, ARROW_SIZE_CM, ARROW_SIZE_CM))
+    // Outline: a slightly heavier chevron drawn just behind the arrow, in the button-label blue.
+    const outline = this.child(pivot, "ArrowOutline")
+    outline.getTransform().setLocalRotation(quat.quatIdentity())
+    outline.getTransform().setLocalScale(new vec3(ARROW_SIZE_CM, ARROW_SIZE_CM, ARROW_SIZE_CM))
+    const outlineVisual = this.visualUnder(outline)
+    outlineVisual.mainMaterial = arrowVisual.mainMaterial.clone()
+    arrowVisual.setRenderOrder(1)
+    outlineVisual.setRenderOrder(0)
     // Halo: a second, slightly larger copy of the ring, shown only while this source is held.
     const halo = global.scene.createSceneObject("Halo")
     halo.setParent(root)
@@ -187,6 +203,8 @@ export class Bearings extends BaseScriptComponent {
       ringBase: ring.getTransform().getLocalScale().x,
       ringMat: ringVisual.mainMaterial,
       arrowMat: arrowVisual.mainMaterial,
+      outline,
+      outlineMat: outlineVisual.mainMaterial,
       halo,
       haloMat: haloVisual.mainMaterial,
       baseColor,
@@ -198,10 +216,22 @@ export class Bearings extends BaseScriptComponent {
       loud: 0,
       wasActive: false,
       tagAbove: false,
+      overStrip: false,
       pos: root.getTransform().getWorldPosition(),
       phi: 0,
       bearing: {yaw: 0, pitch: 0, angle: 180, mode: "arrow", side: 1}
     }
+  }
+
+  /** The RenderMeshVisual on an object or on one of its descendants (an instantiated mesh prefab nests it). */
+  private visualUnder(obj: SceneObject): RenderMeshVisual {
+    const own = obj.getComponent("Component.RenderMeshVisual") as RenderMeshVisual
+    if (own) return own
+    for (let i = 0; i < obj.getChildrenCount(); i++) {
+      const found = this.visualUnder(obj.getChild(i))
+      if (found) return found
+    }
+    return null
   }
 
   private child(parent: SceneObject, name: string): SceneObject {
@@ -313,7 +343,10 @@ export class Bearings extends BaseScriptComponent {
   private draw(e: Element, focused: boolean, camPos: vec3): void {
     const alpha = this.alphaOf(e)
     e.root.enabled = alpha > 0.01
-    if (!e.root.enabled) return
+    if (!e.root.enabled) {
+      e.overStrip = false
+      return
+    }
     const state = this.sources.get(e.id)
     const held = focused && state.active // the focused sound is sounding right now
     const pulse = 1 + ARROW_PULSE * e.loud
@@ -324,6 +357,7 @@ export class Bearings extends BaseScriptComponent {
     e.pivot.enabled = e.morph < 0.98
     e.pivot.getTransform().setLocalScale(new vec3(arrowScale, arrowScale, arrowScale))
     e.pivot.getTransform().setLocalRotation(quat.fromEulerAngles(0, 0, e.phi * RAD))
+    e.outlineMat.mainPass.baseColor = new vec4(OUTLINE_COLOUR.r, OUTLINE_COLOUR.g, OUTLINE_COLOUR.b, alpha)
     const c = held && e.id !== "alarm" ? FOCUS_COLOUR : e.baseColor
     e.ringMat.mainPass.baseColor = new vec4(c.r, c.g, c.b, alpha)
     e.arrowMat.mainPass.baseColor = new vec4(c.r, c.g, c.b, alpha)
@@ -357,6 +391,9 @@ export class Bearings extends BaseScriptComponent {
     const depth = Math.max(1, -rel.z)
     const lowTan = -rel.y / depth
     if (e.morph > 0.5) e.tagAbove = lowTan > (e.tagAbove ? TAG_ABOVE_BACK_TAN : TAG_ABOVE_BELOW_TAN)
+    const ringBottom = rel.y - ringRadius
+    e.overStrip =
+      e.mode === "ring" && e.morph > 0.5 && ringBottom < -STRIP_TOP_TAN * depth && Math.abs(rel.x) < STRIP_HALF_TAN * depth + ringRadius
     const abovePos = new vec2(0, ringRadius + halfH + TAG_GAP_CM * tagScale)
     const ringTagPos = e.tagAbove ? abovePos : underRing
     const at = besideArrow.add(ringTagPos.sub(besideArrow).uniformScale(e.morph))

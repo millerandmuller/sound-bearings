@@ -19,20 +19,28 @@ const LABEL_RENDER_ORDER = 10
 export interface LabelStyle {
   background: vec4 // light fill; alpha is kept at 1 and faded through opacity
   foreground: vec4 // text colour, deep but not black so it never disappears on an additive display
+  outline: vec4 // thin edge so the tag reads when it crosses a light object
 }
+
+/** The deep blue of the button labels, also the outline of tags and arrows. */
+export const OUTLINE_COLOUR = new vec4(0.1, 0.22, 0.45, 1)
+const OUTLINE_CM = 0.14
 
 export const STYLE_LIGHT: LabelStyle = {
   background: new vec4(0.95, 0.98, 1.0, 1),
-  foreground: new vec4(0.1, 0.22, 0.45, 1)
+  foreground: new vec4(0.1, 0.22, 0.45, 1),
+  outline: OUTLINE_COLOUR
 }
 // The focused, sounding source: the brightest thing on screen.
 export const STYLE_FOCUS: LabelStyle = {
   background: new vec4(1.0, 1.0, 1.0, 1),
-  foreground: new vec4(0.05, 0.15, 0.4, 1)
+  foreground: new vec4(0.05, 0.15, 0.4, 1),
+  outline: OUTLINE_COLOUR
 }
 export const STYLE_WARNING: LabelStyle = {
   background: new vec4(1.0, 0.8, 0.52, 1),
-  foreground: new vec4(0.5, 0.14, 0.02, 1)
+  foreground: new vec4(0.5, 0.14, 0.02, 1),
+  outline: new vec4(0.5, 0.14, 0.02, 1) // the alarm keeps its own colour
 }
 
 /** Light rounded plate. No collider, so it never steals a pinch. */
@@ -159,6 +167,10 @@ export class Label {
     if (this.plate) {
       this.plate.backgroundColor = this.style.background
       this.plate.opacity = this.alpha
+      const o = this.style.outline
+      this.plate.border = true
+      this.plate.borderSize = OUTLINE_CM
+      this.plate.borderColor = new vec4(o.r, o.g, o.b, this.alpha)
     }
   }
 }
