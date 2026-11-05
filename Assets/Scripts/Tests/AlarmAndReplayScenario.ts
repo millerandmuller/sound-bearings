@@ -3,7 +3,7 @@ import {expect} from "Leaf.lspkg/Utils/common/Expect"
 import {sleep} from "Leaf.lspkg/Utils/common/Utils"
 import {DefaultLeafInteractor} from "Leaf.lspkg/Interactors/interactor/DefaultLeafInteractor"
 import {findInteractableByName} from "Leaf.lspkg/Interactors/InteractableUtils"
-import {ALARM_CAPTION, FIRST_CAPTION} from "../SoundSources"
+import {ALARM_CAPTION, FIRST_CAPTION, TIMELINE_END_S} from "../SoundSources"
 import {BRIGHT_MIN, DIM_MAX, frames, getRig, startAt, turnSmoothly, turnTo, yawOf} from "./TestKit"
 
 /** Criterion 5: the alarm breaks through Focus with its caption; Replay restarts from the first caption. */
@@ -32,6 +32,22 @@ export class AlarmAndReplayScenario extends Scenario {
     expect(rig.bearings.captionText).toBe(FIRST_CAPTION)
     await sleep(3200) // the kettle comes back at 3 s: the sequence really restarted
     expect(rig.sources.get("kettle").active).toBe(true)
+
+    // The end of the timeline releases Focus: no faint ring, no dimmed tag left behind.
+    await startAt(rig, 38.5)
+    await interactor.trigger(findInteractableByName("FocusButton"))
+    await sleep(300)
+    expect(rig.sources.focused).toBe("kettle")
+    await sleep(2200) // the kettle went silent at 40 s; its held ring is faint, not gone
+    expect(rig.sources.get("kettle").active).toBe(false)
+    expect(rig.bearings.getView("kettle").alpha).toBeGreaterThan(0.1)
+    expect(rig.bearings.getView("kettle").alpha).toBeLessThan(0.5)
+    await sleep((TIMELINE_END_S - rig.sources.time + 1) * 1000)
+    expect(rig.sources.time).toBeGreaterThan(TIMELINE_END_S)
+    expect(rig.sources.focused).toBeNull()
+    expect(rig.bearings.getView("kettle").alpha).toBeLessThan(0.02)
+    expect(rig.bearings.getView("doorbell").alpha).toBeLessThan(0.02)
+    expect(rig.sources.get("doorbell").audio.volume).toBe(1)
   }
 }
 

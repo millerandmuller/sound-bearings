@@ -7,7 +7,8 @@ export type SourceId = "kettle" | "doorbell" | "person" | "alarm"
 export const FIRST_CAPTION = "Sounds are simulated in this preview; live detection is the next step."
 export const ALARM_CAPTION = "Smoke alarm (simulated). Not a safety device."
 
-const TIMELINE_END_S = 45
+export const TIMELINE_END_S = 45
+const MAX_STEP_S = 0.1 // longest frame the timeline will count, so a stall cannot skip cues
 const FIRST_CAPTION_END_S = 3
 const DIMMED_VOLUME = 0.3
 
@@ -32,11 +33,11 @@ const bump = (x: number, length: number): number => (x >= 0 && x < length ? Math
 
 // Loudness envelopes, u = seconds since the window opened, d = window length.
 const ENVELOPES: Record<SourceId, (u: number, d: number) => number> = {
-  kettle: (u, d) => (0.7 + 0.3 * Math.min(1, u / 8)) * Math.min(1, (d - u) / 0.4), // kettle.wav builds towards the boil
-  doorbell: (u) => Math.max(0.2, u < 1 ? 1 - 0.2 * u : 0.8 * Math.exp(-1.1 * (u - 1))), // doorbell.wav: two tones, then the ring dies away
+  kettle: (u, d) => (0.7 + 0.3 * Math.min(1, u / 8)) * Math.min(1, (d - u) / 0.4), // Kettle.wav builds towards the boil
+  doorbell: (u) => Math.max(0.2, u < 1 ? 1 - 0.2 * u : 0.8 * Math.exp(-1.1 * (u - 1))), // Doorbell.wav: two tones, then the ring dies away
   person: (u) => 0.35 + 0.65 * Math.max(bump(u - 0.1, 0.7), bump(u - 1.6, 0.7)), // Mara.wav says "Mara?" about 0.1 to 0.8 s into the clip; cued twice
   alarm: (u) => {
-    const c = u % 4 // smoke-alarm.wav: three 0.5 s beeps a second apart, then a 1.5 s pause
+    const c = u % 4 // SmokeAlarm.wav (8 s): 0.5 s beeps at 0, 1 and 2 s, then a 1.5 s pause, repeating every 4 s
     return c < 2.5 && c % 1 < 0.5 ? 1 : 0.35
   }
 }
@@ -173,8 +174,9 @@ export class SoundSources extends BaseScriptComponent {
   }
 
   private tick(dt: number): void {
-    this.t += dt
+    this.t += Math.min(dt, MAX_STEP_S)
     if (this.t >= TIMELINE_END_S) {
+      if (this.focusedId !== null) this.setFocus(null) // nothing is left to hold at the end
       this.all.forEach((s) => {
         if (s.active) s.audio.stop(true)
         s.active = false

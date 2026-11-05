@@ -5,7 +5,7 @@
 //    tilted up or down for sources above or below (the ceiling alarm).
 // Arrow and ring are ONE element per source: as the user turns, the arrow slides along the edge
 // and morphs into the ring (arrow shrinks while the ring grows), it is never swapped.
-import {SoundSources, SourceId, SourceState} from "./SoundSources"
+import {SoundSources, SourceId, SourceState, TIMELINE_END_S} from "./SoundSources"
 import {Label, OUTLINE_COLOUR, STYLE_FOCUS, STYLE_LIGHT, STYLE_WARNING} from "./Label"
 
 const DEG = 180 / Math.PI
@@ -13,6 +13,7 @@ const RAD = Math.PI / 180
 const MORPH_SECONDS = 0.25
 const FOLLOW_RATE = 25 // 1/s, how quickly the element settles on its target
 const FAINT_ALPHA = 0.3 // held ring after its sound goes silent
+const MIN_RING_TAN = Math.tan((4.5 * Math.PI) / 180) // a ring never looks smaller than ~4.5 degrees across, so far sources still read
 const DIMMED_ALPHA = 0.3 // rings and arrows of everything but the focused sound
 const DIMMED_TAG_ALPHA = 0.5 // their tag text stays readable
 const SIDE_FLIP_MIN_YAW = 5 // degrees; ignore sign noise right at the centre
@@ -268,7 +269,7 @@ export class Bearings extends BaseScriptComponent {
     e.bearing.pitch = Math.atan2(local.y, horizontal) * DEG
     e.bearing.angle = Math.acos(clamp(-local.z / Math.max(local.length, 0.0001), -1, 1)) * DEG
 
-    const heldSilent = focusId === s.id && !s.active
+    const heldSilent = focusId === s.id && !s.active && this.sources.time < TIMELINE_END_S
     if (s.active && !e.wasActive) this.startElement(e, local)
     e.wasActive = s.active
 
@@ -350,7 +351,9 @@ export class Bearings extends BaseScriptComponent {
     const state = this.sources.get(e.id)
     const held = focused && state.active // the focused sound is sounding right now
     const pulse = 1 + ARROW_PULSE * e.loud
-    const ringScale = e.ringBase * (0.4 + 0.6 * e.morph) * (held ? FOCUS_RING_SCALE : 1) * (1 + 0.06 * e.loud)
+    const distance = e.pos.distance(camPos)
+    const ringBase = Math.max(e.ringBase, distance * MIN_RING_TAN)
+    const ringScale = ringBase * (0.4 + 0.6 * e.morph) * (held ? FOCUS_RING_SCALE : 1) * (1 + 0.06 * e.loud)
     e.ring.enabled = e.morph > 0.02
     e.ring.getTransform().setLocalScale(new vec3(ringScale, ringScale, ringScale))
     const arrowScale = (1 - e.morph) * pulse
@@ -376,7 +379,6 @@ export class Bearings extends BaseScriptComponent {
     const dimmed = focused === false && this.sources.focused !== null && e.id !== "alarm"
     e.tag.setAlpha(dimmed ? e.vis * DIMMED_TAG_ALPHA : alpha)
     e.tag.setStyle(e.id === "alarm" ? STYLE_WARNING : held ? STYLE_FOCUS : STYLE_LIGHT)
-    const distance = e.pos.distance(camPos)
     const tagScale = clamp(distance / 110, 1, 3.5) * (focused ? 1.3 : 1)
     const halfW = (e.tag.size.x / 2) * tagScale
     const halfH = (e.tag.size.y / 2) * tagScale
