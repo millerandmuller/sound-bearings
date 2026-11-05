@@ -7,6 +7,7 @@
     - !<own> 6f5dea2f-1004-47ea-973d-0fd2fc4c9e9a
     - !<own> eef5d3a0-659e-4b99-b14c-1df572ba4db0
     - !<own> 83f8f9c7-3364-4474-936b-91219366caa7
+    - !<own> 0e8a556e-ecde-4f61-9057-4769423da3be
   layers: !<Layers/267ee9a7-aff2-4f9d-9a49-f71214747d03>
     userLayers:
       - id: 1
@@ -503,6 +504,21 @@
     - !<own> bbcddeb1-2c47-482e-861a-4f2d74fda27a
   Components:
     []
+- !<SceneObject/0e8a556e-ecde-4f61-9057-4769423da3be>
+  PrefabRemaps:
+    []
+  Name: LeafIndex
+  Enabled: true
+  Layers: 1
+  LocalTransform: !<TransformEntity>
+    Position: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Rotation: {x: 0.000000, y: 0.000000, z: 0.000000}
+    Scale: {x: 1.000000, y: 1.000000, z: 1.000000}
+    HasSegmentScaleCompensation: false
+  Children:
+    []
+  Components:
+    - !<own> c0872925-db27-4f95-b3c7-fde61652d2d2
 - !<SceneObject/0f983d21-20bc-4d89-a991-fbb95bacbd64>
   PrefabRemaps:
     []
@@ -2888,6 +2904,22 @@
     []
   Components:
     []
+- !<ScriptComponent/c0872925-db27-4f95-b3c7-fde61652d2d2>
+  PrefabRemaps:
+    []
+  Name: LeafIndex
+  Enabled: true
+  ScriptAsset: !<reference> b3b14813-e2fe-4fbf-8501-f38eb6d0da7c
+  ScriptInputsDefault:
+    {}
+  ScriptTypesDefault:
+    {}
+  ScriptInputs:
+    "":
+      {}
+  ScriptTypes:
+    "":
+      {}
 - !<AudioComponent/c26ff536-8107-49b7-bde8-a8f14646c51a>
   PrefabRemaps:
     []
