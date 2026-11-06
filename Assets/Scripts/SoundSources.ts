@@ -47,6 +47,7 @@ const CUES: ReadonlyArray<[SourceId, number]> = [
   ["kettle", 3],
   ["doorbell", 12],
   ["person", 24],
+  ["doorbell", 33],
   ["person", 25.5],
   ["kettle", 30],
   ["alarm", 36]
@@ -100,7 +101,7 @@ export class SoundSources extends BaseScriptComponent {
     })
     this.all.push(
       make("kettle", this.kettleAudio, "Kettle", "Kettle", [[3, 13], [30, 40]]),
-      make("doorbell", this.doorbellAudio, "Doorbell", "Doorbell", [[12, 18]]),
+      make("doorbell", this.doorbellAudio, "Doorbell", "Doorbell", [[12, 18], [33, 37]]),
       make("person", this.personAudio, "Someone called you", "Mara?", [[24, 27]]),
       make("alarm", this.alarmAudio, "Smoke alarm", "Smoke alarm", [[36, 44]])
     )

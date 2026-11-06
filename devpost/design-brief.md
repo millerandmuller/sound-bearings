@@ -60,6 +60,7 @@ The timeline is a fixed 45-second loop that plays on its own after the Lens open
 | 24 to 27 s | The person calls "Mara?" from the doorway, behind-left. Arrow pulses on the left edge with the caption "Mara?", becomes a ring with the tag "Someone called you" when she faces the doorway. |
 | 27 to 30 s | Quiet gap. |
 | 30 to 40 s | Kettle sounds again. In the demo, Focus is pinched while the kettle sounds, at about 32 s. |
+| 33 to 37 s | Doorbell rings again, behind-right, dimmed under Focus (30 % brightness and volume, tag still shown). Captured at 36.5 s: its arrow and the orange alarm arrow do not collide (alarm above, doorbell below). |
 | 36 to 44 s | Smoke alarm fires while Focus is on. It breaks through at full brightness in its own colour with its caption. |
 | 45 s | End. |
 

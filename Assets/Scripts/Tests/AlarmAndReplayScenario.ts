@@ -12,12 +12,18 @@ export class AlarmAndReplayScenario extends Scenario {
   async run(): Promise<void> {
     const rig = await getRig()
     const interactor = new DefaultLeafInteractor()
-    await startAt(rig, 34) // kettle sounds 30 to 40 s
+    await startAt(rig, 33) // kettle sounds 30 to 40 s; the doorbell rings again 33 to 37 s
 
     await interactor.trigger(findInteractableByName("FocusButton"))
     await sleep(300)
     expect(rig.sources.focused).toBe("kettle")
-    await sleep(2600) // alarm fires at 36 s
+    while (rig.sources.time < 34.5) await sleep(50)
+    expect(rig.sources.get("doorbell").active).toBe(true)
+    expect(rig.bearings.getView("doorbell").alpha).toBeLessThan(0.4) // Focus shows what it suppresses: dimmed, not gone
+    expect(rig.bearings.getView("doorbell").alpha).toBeGreaterThan(0.2)
+    expect(rig.bearings.getView("doorbell").tag).toBe("Doorbell")
+    expect(rig.sources.get("doorbell").audio.volume).toBeCloseTo(0.3, 2)
+    while (rig.sources.time < 36.6) await sleep(50) // alarm fires at 36 s
     expect(rig.sources.get("alarm").active).toBe(true)
     expect(rig.bearings.getView("alarm").alpha).toBeGreaterThan(BRIGHT_MIN)
     expect(rig.bearings.getView("alarm").tag).toBe("Smoke alarm")
