@@ -57,8 +57,9 @@ The timeline is a fixed 45-second loop that plays on its own after the Lens open
 | 0 to 3 s | Caption: "Sounds are simulated in this preview; live detection is the next step." |
 | 3 to 13 s | Kettle sounds. Ring and tag "Kettle" on the kettle when in view; arrow at the edge when not. |
 | 12 to 18 s | Doorbell sounds, behind-right. Arrow with tag "Doorbell" on the right edge, becomes a ring when she faces it. |
-| 24 to 27 s | The person calls "Mara?" from the doorway, behind-left. Arrow pulses on the left edge with the caption "Mara?", becomes a ring with the tag "Someone called you" when she faces the doorway. |
-| 27 to 30 s | Quiet gap. |
+| 24 to 27 s | The person calls "Mara?" from the doorway, behind-left. Arrow pulses on the left edge; the caption line at the bottom centre shows "Mara?" on the same plate as the first caption (the alarm caption keeps priority; it ends at 27 s), becomes a ring with the tag "Someone called you" when she faces the doorway. |
+| 27 to 29 s | The "Someone called you" ring holds for 2 s after the voice stops, then fades over 0.5 s (this hold applies to that ring only). |
+| 29 to 30 s | Quiet. |
 | 30 to 40 s | Kettle sounds again. In the demo, Focus is pinched while the kettle sounds, at about 32 s. |
 | 33 to 37 s | Doorbell rings again, behind-right, dimmed under Focus (30 % brightness and volume, tag still shown). Captured at 36.5 s: its arrow and the orange alarm arrow do not collide (alarm above, doorbell below). |
 | 36 to 44 s | Smoke alarm fires while Focus is on. It breaks through at full brightness in its own colour with its caption. |
@@ -119,3 +120,7 @@ This part is for you, after CLAD finishes.
 5. **Label what you know.** Write "logic proven" next to anything the tests and preview show working, and "feel unproven" next to anything only real glasses could tell you (comfort over time, real hand tracking, real recognition).
 6. **Fix with design notes, not code.** Tell your agent what to change in design terms, for example: "Move the step card 15 cm lower and next to the pan. Make the Next button twice as big. Re-run the tests." If a fix takes under a minute, like nudging a panel, do it yourself in the scene.
 7. **Submit.** Record a video under 3 minutes of your Lens in the preview, public on YouTube. Make your repo public with your Lens Studio project and this `devpost/` folder. Details are on the hackathon site: https://learn-specs.devpost.com/resources
+
+## Display rules added after the second review
+- The control strip drops to 40 % alpha while any ring is on screen and returns to full while Focus or Replay is hovered. The Focus pinch stayed reliable in the preview (c4 and c5 press the real buttons), so this shipped in full.
+- Tags never sit under a caption plate: when a caption shows, a ring tag moves above its ring, and any other tag is lifted clear of the plate. Checked at 37 s: the Kettle tag sits above its ring and clear of the alarm caption.

@@ -55,6 +55,7 @@ This is a demonstration of the response, not of detection.
 | 3 to 13 and 30 to 40 | Kettle (ahead, to the left) |
 | 12 to 18 | Doorbell (behind, to the right) |
 | 24 to 27 | "Mara?" from the doorway (behind, to the left) |
+| 27 to 29 | The "Someone called you" ring holds, then fades |
 | 33 to 37 | Doorbell rings again (behind-right), dimmed under Focus |
 | 36 to 44 | Smoke alarm (ceiling, behind) |
 

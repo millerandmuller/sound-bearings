@@ -13,6 +13,7 @@ const RAD = Math.PI / 180
 const MORPH_SECONDS = 0.25
 const FOLLOW_RATE = 25 // 1/s, how quickly the element settles on its target
 const FAINT_ALPHA = 0.3 // held ring after its sound goes silent
+const CALL_HOLD_S = 2 // the "Someone called you" ring stays this long after the voice stops, then fades; no other ring does this
 const MIN_RING_TAN = Math.tan((4.5 * Math.PI) / 180) // a ring never looks smaller than ~4.5 degrees across, so far sources still read
 const DIMMED_ALPHA = 0.3 // rings and arrows of everything but the focused sound
 const DIMMED_TAG_ALPHA = 0.5 // their tag text stays readable
@@ -25,10 +26,11 @@ const ARROW_SIZE_CM = 7
 const ARROW_PULSE = 0.3 // extra size at full loudness
 const TAG_GAP_CM = 0.8
 // The control strip (Focus.ts defaults: 60 cm ahead, centred 16.2 cm below eye level, 14.3 x 5.9 cm).
-// Tags never overlap it, and a ring in the lower part of the view puts its tag above itself.
+// Tags never overlap it or the caption plate, and a ring in the lower part of the view puts its tag above itself.
 const STRIP_TOP_TAN = (16.2 - 2.95) / 60
 const STRIP_HALF_TAN = 7.15 / 60
 const STRIP_MARGIN_CM = 0.5
+const CAPTION_MARGIN_CM = 0.5
 const TAG_ABOVE_BELOW_TAN = 0.09 // ring more than ~5 degrees below the view centre: tag goes above
 const TAG_ABOVE_BACK_TAN = 0.05 // and returns under the ring once it is back above ~3 degrees
 // The focused, sounding ring is the brightest thing on screen: pure white, larger, with a halo.
@@ -70,7 +72,6 @@ interface Element {
   vis: number // 0..1, fades over fadeSeconds
   loud: number // smoothed loudness
   wasActive: boolean
-  overStrip: boolean // the ring overlaps the control strip
   tagAbove: boolean // ring tag sits above the ring (ring is low in the view); has hysteresis
   pos: vec3
   phi: number // degrees, direction the arrow points on screen
@@ -134,9 +135,9 @@ export class Bearings extends BaseScriptComponent {
     return this.element(id).bearing
   }
 
-  /** True while any visible ring overlaps the control strip (Focus dims the strip then). */
-  get ringOverStrip(): boolean {
-    return this.elements.some((e) => e.overStrip && e.root.enabled)
+  /** True while any ring is on screen (Focus dims the control strip then, until the user hovers it). */
+  get ringOnScreen(): boolean {
+    return this.elements.some((e) => e.mode === "ring" && e.morph > 0.5 && e.root.enabled)
   }
 
   /** The indicator's current visual state: used by the tests and by Focus. */
@@ -217,7 +218,6 @@ export class Bearings extends BaseScriptComponent {
       loud: 0,
       wasActive: false,
       tagAbove: false,
-      overStrip: false,
       pos: root.getTransform().getWorldPosition(),
       phi: 0,
       bearing: {yaw: 0, pitch: 0, angle: 180, mode: "arrow", side: 1}
@@ -285,7 +285,9 @@ export class Bearings extends BaseScriptComponent {
     e.bearing.mode = e.mode
     e.bearing.side = e.side
 
-    const targetVis = s.active ? 1 : heldSilent && e.mode === "ring" ? FAINT_ALPHA : 0
+    // The call's ring lingers CALL_HOLD_S after the voice stops (only if it is a ring now), then fades as usual.
+    const holdCall = s.id === "person" && !s.active && e.mode === "ring" && e.vis > 0.001 && this.sources.silentSince("person") < CALL_HOLD_S
+    const targetVis = s.active || holdCall ? 1 : heldSilent && e.mode === "ring" ? FAINT_ALPHA : 0
     e.vis = moveToward(e.vis, targetVis, dt / this.fadeSeconds)
     e.morph = moveToward(e.morph, e.mode === "ring" ? 1 : 0, dt / MORPH_SECONDS)
     e.loud += (s.loudness - e.loud) * Math.min(1, dt * 12)
@@ -344,10 +346,7 @@ export class Bearings extends BaseScriptComponent {
   private draw(e: Element, focused: boolean, camPos: vec3): void {
     const alpha = this.alphaOf(e)
     e.root.enabled = alpha > 0.01
-    if (!e.root.enabled) {
-      e.overStrip = false
-      return
-    }
+    if (!e.root.enabled) return
     const state = this.sources.get(e.id)
     const held = focused && state.active // the focused sound is sounding right now
     const pulse = 1 + ARROW_PULSE * e.loud
@@ -393,18 +392,35 @@ export class Bearings extends BaseScriptComponent {
     const depth = Math.max(1, -rel.z)
     const lowTan = -rel.y / depth
     if (e.morph > 0.5) e.tagAbove = lowTan > (e.tagAbove ? TAG_ABOVE_BACK_TAN : TAG_ABOVE_BELOW_TAN)
-    const ringBottom = rel.y - ringRadius
-    e.overStrip =
-      e.mode === "ring" && e.morph > 0.5 && ringBottom < -STRIP_TOP_TAN * depth && Math.abs(rel.x) < STRIP_HALF_TAN * depth + ringRadius
     const abovePos = new vec2(0, ringRadius + halfH + TAG_GAP_CM * tagScale)
-    const ringTagPos = e.tagAbove ? abovePos : underRing
+    // While a caption shows, a tag that would land on its plate goes above the ring instead.
+    const caption = this.captionZone(depth, tagScale)
+    const underHitsCaption = caption !== null && this.hitsZone(rel.x + underRing.x, rel.y + underRing.y, halfW, halfH, caption)
+    const ringTagPos = e.tagAbove || underHitsCaption ? abovePos : underRing
     const at = besideArrow.add(ringTagPos.sub(besideArrow).uniformScale(e.morph))
-    // Keep the tag clear of the control strip: lift it if its bottom edge would sit inside the strip.
-    const stripTop = -STRIP_TOP_TAN * depth + STRIP_MARGIN_CM * tagScale
-    const overlapsX = Math.abs(rel.x + at.x) < STRIP_HALF_TAN * depth + halfW
-    if (overlapsX && rel.y + at.y - halfH < stripTop) at.y = stripTop + halfH - rel.y
+    // Whatever is left over a plate (control strip, caption) is lifted clear of it.
+    const strip = {halfWidth: STRIP_HALF_TAN * depth, top: -STRIP_TOP_TAN * depth + STRIP_MARGIN_CM * tagScale}
+    ;[strip, caption].forEach((zone) => {
+      if (zone !== null && this.hitsZone(rel.x + at.x, rel.y + at.y, halfW, halfH, zone)) at.y = zone.top + halfH - rel.y
+    })
     e.tag.root.getTransform().setLocalScale(new vec3(tagScale, tagScale, tagScale))
     e.tag.root.getTransform().setLocalPosition(new vec3(at.x, at.y, 0.3))
+  }
+
+  /** The caption plate as a keep-clear zone at the tag's depth, or null while no caption shows. */
+  private captionZone(depth: number, tagScale: number): {halfWidth: number; top: number} | null {
+    if (this.captionAlpha <= 0.01) return null
+    const size = this.caption.size
+    const tanPerCm = depth / CAPTION_DISTANCE_CM
+    return {
+      halfWidth: (size.x / 2) * CAPTION_SCALE * tanPerCm,
+      top: (CAPTION_HEIGHT_CM + (size.y / 2) * CAPTION_SCALE) * tanPerCm + CAPTION_MARGIN_CM * tagScale
+    }
+  }
+
+  /** True when a tag centred at (x, y) with half sizes (halfW, halfH) has its bottom edge below the zone's top and overlaps it sideways. */
+  private hitsZone(x: number, y: number, halfW: number, halfH: number, zone: {halfWidth: number; top: number}): boolean {
+    return Math.abs(x) < zone.halfWidth + halfW && y - halfH < zone.top
   }
 
   private updateCaption(dt: number): void {

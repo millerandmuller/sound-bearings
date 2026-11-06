@@ -24,7 +24,7 @@ const PLATE_IDLE = new vec4(0.8, 0.88, 0.98, 1)
 const PLATE_HOVER = new vec4(0.92, 0.96, 1.0, 1)
 const PLATE_ON = new vec4(1, 1, 1, 1) // Focus held
 const LABEL_COLOUR = OUTLINE_COLOUR // deep blue, never black
-const DIMMED_PANEL_ALPHA = 0.4 // the whole strip, while a ring overlaps it
+const DIMMED_PANEL_ALPHA = 0.4 // the whole strip, while a ring is on screen and nothing is hovered
 const PANEL_FADE_RATE = 10
 const PLATE_OVERSIZE_CM = 0.3
 const PLATE_CORNER_CM = 0.3
@@ -191,9 +191,10 @@ export class Focus extends BaseScriptComponent {
     this.replayPlate.backgroundColor = this.replayHover ? PLATE_HOVER : PLATE_IDLE
   }
 
-  /** Dim the whole strip to 40 percent while any ring overlaps it, so the ring stays readable. */
+  /** Dim the whole strip to 40 percent while any ring is on screen, so the ring stays readable; full while a button is hovered. */
   private fadePanel(dt: number): void {
-    const target = this.bearings.ringOverStrip ? DIMMED_PANEL_ALPHA : 1
+    const hovered = this.focusHover || this.replayHover
+    const target = this.bearings.ringOnScreen && !hovered ? DIMMED_PANEL_ALPHA : 1
     const next = this.panelAlpha + (target - this.panelAlpha) * (1 - Math.exp(-PANEL_FADE_RATE * dt))
     if (next === this.panelAlpha) return
     this.panelAlpha = Math.abs(next - target) < 0.005 ? target : next

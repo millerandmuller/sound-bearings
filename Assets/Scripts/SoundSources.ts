@@ -6,6 +6,7 @@ export type SourceId = "kettle" | "doorbell" | "person" | "alarm"
 
 export const FIRST_CAPTION = "Sounds are simulated in this preview; live detection is the next step."
 export const ALARM_CAPTION = "Smoke alarm (simulated). Not a safety device."
+export const CALL_CAPTION = "Mara?"
 
 export const TIMELINE_END_S = 45
 const MAX_STEP_S = 0.1 // longest frame the timeline will count, so a stall cannot skip cues
@@ -121,9 +122,10 @@ export class SoundSources extends BaseScriptComponent {
     return this.focusedId
   }
 
-  /** The caption line: the first caption at 0 to 3 s, the alarm caption while the alarm sounds, else empty. */
+  /** The caption line: the alarm caption while the alarm sounds (it has priority), "Mara?" while the call sounds, the first caption at 0 to 3 s, else empty. */
   get caption(): string {
     if (this.get("alarm").active) return ALARM_CAPTION
+    if (this.get("person").active) return CALL_CAPTION
     return this.t < FIRST_CAPTION_END_S ? FIRST_CAPTION : ""
   }
 
@@ -134,6 +136,12 @@ export class SoundSources extends BaseScriptComponent {
   /** Sources sounding right now. */
   get active(): SourceState[] {
     return this.all.filter((s) => s.active)
+  }
+
+  /** Seconds since the latest sounding window of a source ended; Infinity if none has ended yet. */
+  silentSince(id: SourceId): number {
+    const ended = this.get(id).windows.filter(([, to]) => to <= this.t).map(([, to]) => this.t - to)
+    return ended.length === 0 ? Infinity : Math.min(...ended)
   }
 
   /** Hold Focus on one source (null releases). Others drop to 30 percent volume; the alarm never does. */

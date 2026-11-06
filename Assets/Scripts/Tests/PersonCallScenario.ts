@@ -3,7 +3,7 @@ import {expect} from "Leaf.lspkg/Utils/common/Expect"
 import {sleep} from "Leaf.lspkg/Utils/common/Utils"
 import {DefaultLeafInteractor} from "Leaf.lspkg/Interactors/interactor/DefaultLeafInteractor"
 import {findInteractableByName} from "Leaf.lspkg/Interactors/InteractableUtils"
-import {ALARM_CAPTION, FIRST_CAPTION} from "../SoundSources"
+import {CALL_CAPTION} from "../SoundSources"
 import {BRIGHT_MIN, DIM_MAX, frames, getRig, startAt, turnSmoothly, turnTo, yawOf} from "./TestKit"
 
 /** Criterion 3: "Mara?" arrow on the left edge pulses; facing the doorway makes a ring "Someone called you". */
@@ -15,6 +15,7 @@ export class PersonCallScenario extends Scenario {
     let view = rig.bearings.getView("person")
     expect(view.mode).toBe("arrow")
     expect(view.tag).toBe("Mara?")
+    expect(rig.bearings.captionText).toBe(CALL_CAPTION) // the call is captioned on the bottom line
     expect(rig.bearings.getBearing("person").side).toBe(-1)
 
     const loud: number[] = []
@@ -28,6 +29,18 @@ export class PersonCallScenario extends Scenario {
     view = rig.bearings.getView("person")
     expect(view.mode).toBe("ring")
     expect(view.tag).toBe("Someone called you")
+
+    // The ring holds for 2 s after the voice stops at 27 s, then fades; the caption ends with the call.
+    rig.sources.seek(26.9)
+    while (rig.sources.time < 27.2) await sleep(50)
+    expect(rig.sources.get("person").active).toBe(false)
+    expect(rig.sources.caption).toBe("")
+    while (rig.sources.time < 28.5) await sleep(50)
+    view = rig.bearings.getView("person")
+    expect(view.mode).toBe("ring")
+    expect(view.alpha).toBeGreaterThan(0.5)
+    while (rig.sources.time < 30) await sleep(50)
+    expect(rig.bearings.getView("person").alpha).toBeLessThan(0.05)
   }
 }
 
