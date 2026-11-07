@@ -5,7 +5,7 @@
 //    tilted up or down for sources above or below (the ceiling alarm).
 // Arrow and ring are ONE element per source: as the user turns, the arrow slides along the edge
 // and morphs into the ring (arrow shrinks while the ring grows), it is never swapped.
-import {SoundSources, SourceId, SourceState, TIMELINE_END_S} from "./SoundSources"
+import {CALL_CAPTION, SoundSources, SourceId, SourceState, TIMELINE_END_S} from "./SoundSources"
 import {Label, OUTLINE_COLOUR, STYLE_FOCUS, STYLE_LIGHT, STYLE_WARNING} from "./Label"
 
 const DEG = 180 / Math.PI
@@ -38,6 +38,8 @@ const FOCUS_COLOUR = new vec4(1, 1, 1, 1)
 const FOCUS_RING_SCALE = 1.15
 const HALO_SCALE = 1.22
 const HALO_ALPHA = 0.55
+// Ring outline: two copies of the ring, one just outside and one just inside its stroke, in the arrow's outline blue.
+const RING_OUTLINE_OFFSET = 0.045
 // Caption line: same distance as the control panel (60 cm) and just above it, so it sits at the
 // bottom of the view. Scaled by 60/110 so the text keeps the angular size it is tuned for at 110 cm.
 const CAPTION_HEIGHT_CM = -8.5
@@ -62,6 +64,8 @@ interface Element {
   readonly arrowMat: Material
   readonly outline: SceneObject // dark-blue outline behind the arrow
   readonly outlineMat: Material
+  readonly ringOutlines: SceneObject[] // outside and inside the ring stroke
+  readonly ringOutlineMat: Material
   readonly halo: SceneObject
   readonly haloMat: Material
   readonly baseColor: vec4
@@ -188,6 +192,21 @@ export class Bearings extends BaseScriptComponent {
     outlineVisual.mainMaterial = arrowVisual.mainMaterial.clone()
     arrowVisual.setRenderOrder(1)
     outlineVisual.setRenderOrder(0)
+    // Ring outline: two copies of the ring either side of its stroke, one material, faded with the ring.
+    const ringOutlineMat = ringVisual.mainMaterial.clone()
+    const ringOutlines = [0, 1].map((i) => {
+      const o = global.scene.createSceneObject(i === 0 ? "RingOutlineOut" : "RingOutlineIn")
+      o.setParent(ring)
+      o.layer = ring.layer
+      const v = o.createComponent("Component.RenderMeshVisual") as RenderMeshVisual
+      v.mesh = ringVisual.mesh
+      v.mainMaterial = ringOutlineMat
+      v.setRenderOrder(0)
+      const k = 1 + (i === 0 ? RING_OUTLINE_OFFSET : -RING_OUTLINE_OFFSET)
+      o.getTransform().setLocalScale(new vec3(k, k, k))
+      return o
+    })
+    ringVisual.setRenderOrder(1)
     // Halo: a second, slightly larger copy of the ring, shown only while this source is held.
     const halo = global.scene.createSceneObject("Halo")
     halo.setParent(root)
@@ -207,6 +226,8 @@ export class Bearings extends BaseScriptComponent {
       arrowMat: arrowVisual.mainMaterial,
       outline,
       outlineMat: outlineVisual.mainMaterial,
+      ringOutlines,
+      ringOutlineMat,
       halo,
       haloMat: haloVisual.mainMaterial,
       baseColor,
@@ -360,6 +381,7 @@ export class Bearings extends BaseScriptComponent {
     e.pivot.getTransform().setLocalScale(new vec3(arrowScale, arrowScale, arrowScale))
     e.pivot.getTransform().setLocalRotation(quat.fromEulerAngles(0, 0, e.phi * RAD))
     e.outlineMat.mainPass.baseColor = new vec4(OUTLINE_COLOUR.r, OUTLINE_COLOUR.g, OUTLINE_COLOUR.b, alpha)
+    e.ringOutlineMat.mainPass.baseColor = new vec4(OUTLINE_COLOUR.r, OUTLINE_COLOUR.g, OUTLINE_COLOUR.b, alpha)
     const c = held && e.id !== "alarm" ? FOCUS_COLOUR : e.baseColor
     e.ringMat.mainPass.baseColor = new vec4(c.r, c.g, c.b, alpha)
     e.arrowMat.mainPass.baseColor = new vec4(c.r, c.g, c.b, alpha)
@@ -429,7 +451,10 @@ export class Bearings extends BaseScriptComponent {
       this.caption.setText(text)
       this.caption.setStyle(this.sources.get("alarm").active ? STYLE_WARNING : STYLE_LIGHT)
     }
-    this.captionAlpha = moveToward(this.captionAlpha, text !== "" ? 1 : 0, dt / this.fadeSeconds)
+    // Once the call has become a ring on the figure, the ring and its tag carry it: the display drops the "Mara?" plate.
+    const person = this.element("person")
+    const callIsRing = text === CALL_CAPTION && person.mode === "ring" && person.morph > 0.5
+    this.captionAlpha = moveToward(this.captionAlpha, text !== "" && !callIsRing ? 1 : 0, dt / this.fadeSeconds)
     this.caption.setAlpha(this.captionAlpha)
   }
 }
