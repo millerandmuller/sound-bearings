@@ -1,6 +1,14 @@
 # Sound Bearings
 
-A Lens for Snap Spectacles (SPECS) that shows where a sound is coming from. It is built for the Devpost "Learn AR with SPECS" hackathon.
+Sound Bearings shows a person who is hard of hearing where a sound comes from, not what it is: a ring on the source when it is in view, an arrow at the edge of the view when it is beside or behind her.
+
+It is a Lens for Snap Spectacles (SPECS), built for the Devpost "Learn AR with SPECS" hackathon.
+
+![The simulated kitchen in the Lens Studio preview: a ring with the tag "Someone called you" on the figure in the doorway](devpost/stills/someone_called_you_ring.jpg)
+
+Tests: 6 of 6 LEAF scenarios pass in the Lens Studio 5.23.2 preview, last run 2026-11-07.
+
+The plan is in [`devpost/design-brief.md`](devpost/design-brief.md), written through the Devpost Learn skill pack.
 
 ## What it does
 
@@ -35,7 +43,7 @@ Six scenarios live in `Assets/Scripts/Tests/`. They run in the Lens Studio previ
 | `c2-doorbell-arrow` | The doorbell starts as an arrow on the right edge tagged "Doorbell". Turning right slides it into a ring without jumping. Turning left keeps the arrow on the right edge. |
 | `c3-person-call` | "Mara?" shows as an arrow on the left edge that pulses with the voice. Facing the doorway turns it into a ring tagged "Someone called you". |
 | `c4-focus` | A press on Focus holds the kettle: it stays bright, the doorbell drops below 40 percent brightness and to 30 percent volume. A second press releases both. |
-| `c5-alarm-replay` | With the kettle held, the smoke alarm still shows at full brightness and full volume with its caption. Replay clears Focus and restarts at the first caption. |
+| `c5-alarm-replay` | With the kettle held, the smoke alarm still shows at full brightness and full volume with its caption. Replay clears Focus and restarts at the opening caption. |
 | `x-behind-stays-put` | With a source directly behind the wearer, its arrow stays on the same side for 60 frames. |
 
 What the tests do not cover: the alarm's orange colour, the exact size of the pulse (only that the loudness varies), whether a real hand can reach the buttons, and how the sound direction actually sounds.
