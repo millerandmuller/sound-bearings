@@ -25,6 +25,7 @@ const MAX_TILT = 60 // degrees the arrow may tilt up or down
 const ARROW_SIZE_CM = 7
 const ARROW_PULSE = 0.3 // extra size at full loudness
 const TAG_GAP_CM = 0.8
+const TAG_SIZE = 1.5 // tags read at 1080p; falls back to 1.25 or 1.0 if the stacked arrows at 36 s touch
 // The control strip (Focus.ts defaults: 60 cm ahead, centred 16.2 cm below eye level, 14.3 x 5.9 cm).
 // Tags never overlap it or the caption plate, and a ring in the lower part of the view puts its tag above itself.
 const STRIP_TOP_TAN = (16.2 - 2.95) / 60
@@ -400,7 +401,7 @@ export class Bearings extends BaseScriptComponent {
     const dimmed = focused === false && this.sources.focused !== null && e.id !== "alarm"
     e.tag.setAlpha(dimmed ? e.vis * DIMMED_TAG_ALPHA : alpha)
     e.tag.setStyle(e.id === "alarm" ? STYLE_WARNING : held ? STYLE_FOCUS : STYLE_LIGHT)
-    const tagScale = clamp(distance / 110, 1, 3.5) * (focused ? 1.3 : 1)
+    const tagScale = clamp(distance / 110, 1, 3.5) * (focused ? 1.3 : 1) * TAG_SIZE
     const halfW = (e.tag.size.x / 2) * tagScale
     const halfH = (e.tag.size.y / 2) * tagScale
     const ringRadius = (ringScale / 2) * (haloOn ? HALO_SCALE : 1)
