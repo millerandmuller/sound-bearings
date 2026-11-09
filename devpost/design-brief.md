@@ -61,8 +61,8 @@ The timeline is a fixed 45-second loop that plays on its own after the Lens open
 | 27 to 29 s | The "Someone called you" ring holds for 2 s after the voice stops, then fades over 0.5 s (this hold applies to that ring only). |
 | 29 to 30 s | Quiet. |
 | 30 to 40 s | Kettle sounds again. In the demo, Focus is pinched while the kettle sounds, at about 32 s. |
-| 33 to 37 s | Doorbell rings again, behind-right, dimmed under Focus (30 % brightness and volume, tag still shown). Captured at 36.5 s: its arrow and the orange alarm arrow do not collide (alarm above, doorbell below). |
-| 36 to 44 s | Smoke alarm fires while Focus is on. It breaks through at full brightness in its own colour with its caption. |
+| 33 to 37 s | Doorbell rings again, behind-right, dimmed under Focus (30 % brightness and volume, tag still shown). Captured at 36.5 s: its arrow and the red alarm arrow do not collide (alarm above, doorbell below). |
+| 36 to 44 s | Smoke alarm fires while Focus is on. It breaks through at full brightness in its own colour with its caption (red arrow and ring; the caption is a cream tag with a red edge). |
 | 45 s | End. |
 
 - Each ring or arrow shows only while its sound is playing, then fades (fade time about 0.5 s, default).
@@ -92,7 +92,7 @@ Each one can be checked in Lens Studio's preview.
 - Mara is hard of hearing, so the Lens must not depend on hearing the sounds. Sound playback in the preview is there for the video, and every sound also has a visual indicator.
 - The person stand-in is a faceless figure. No one is recorded, identified or followed.
 - Landmarks added so the mouse turns pass something: a four-pane window frame on the right wall (between the counter and the doorbell), a honey-toned wall cabinet with a shelf and two jars on the left wall (between the counter and the doorway), a warm apricot back wall in the hallway behind the figure, and one framed picture above the doorbell box (added because the window is out of frame at 135 degrees right). All are plain boxes in light colours, so the kitchen is still obviously a stand-in. None sits on a source, the control strip or the start-pose view. Checked at the Reset pose and at 60 and 135 degrees each way, plus facing the alarm.
-- The visual pass after the third review changed colours, the ring outline and tag size only: the kettle, doorbell plate, counter and upper cabinets got flat light colours, rings carry the same thin blue outline as the arrows, the "Mara?" caption is hidden once the call has become a ring, and tags are 1.5 times larger. No source, timeline, caption text or tag text moved.
+- The visual pass after the third review changed colours, the ring outline and tag size only: the kettle, doorbell plate, counter and upper cabinets got flat light colours, rings carry the same thin outline as the arrows, the "Mara?" caption is hidden once the call has become a ring, and tags are 1.5 times larger. No source, timeline, caption text or tag text moved.
 
 ## Build notes for CLAD
 - Build for SPECS so it runs and can be demonstrated in Lens Studio's preview. No SPECS device is available.

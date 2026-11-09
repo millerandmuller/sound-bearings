@@ -19,11 +19,11 @@ const PAD_CM = 0.7
 const GAP_CM = 0.9
 // No dark fills (the display is additive): a faint light strip, and light plates under each button.
 // The UI Kit button itself is the Ghost style (no fill of its own); its hit target is the button's size.
-const PANEL_COLOUR = new vec4(0.9, 0.93, 0.97, 0.45)
-const PLATE_IDLE = new vec4(0.8, 0.88, 0.98, 1)
-const PLATE_HOVER = new vec4(0.92, 0.96, 1.0, 1)
+const PANEL_COLOUR = new vec4(0.953, 0.925, 0.867, 0.45)
+const PLATE_IDLE = new vec4(0.953, 0.925, 0.867, 1)
+const PLATE_HOVER = new vec4(0.98, 0.965, 0.925, 1)
 const PLATE_ON = new vec4(1, 1, 1, 1) // Focus held
-const LABEL_COLOUR = OUTLINE_COLOUR // deep blue, never black
+const LABEL_COLOUR = OUTLINE_COLOUR // warm ink, never black
 const DIMMED_PANEL_ALPHA = 0.4 // the whole strip, while a ring is on screen and nothing is hovered
 const PANEL_FADE_RATE = 10
 const PLATE_OVERSIZE_CM = 0.3

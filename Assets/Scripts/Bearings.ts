@@ -6,7 +6,7 @@
 // Arrow and ring are ONE element per source: as the user turns, the arrow slides along the edge
 // and morphs into the ring (arrow shrinks while the ring grows), it is never swapped.
 import {CALL_CAPTION, SoundSources, SourceId, SourceState, TIMELINE_END_S} from "./SoundSources"
-import {Label, OUTLINE_COLOUR, STYLE_FOCUS, STYLE_LIGHT, STYLE_WARNING} from "./Label"
+import {ALARM_OUTLINE, Label, OUTLINE_COLOUR, STYLE_FOCUS, STYLE_LIGHT, STYLE_WARNING} from "./Label"
 
 const DEG = 180 / Math.PI
 const RAD = Math.PI / 180
@@ -39,7 +39,7 @@ const FOCUS_COLOUR = new vec4(1, 1, 1, 1)
 const FOCUS_RING_SCALE = 1.15
 const HALO_SCALE = 1.22
 const HALO_ALPHA = 0.55
-// Ring outline: two copies of the ring, one just outside and one just inside its stroke, in the arrow's outline blue.
+// Ring outline: two copies of the ring, one just outside and one just inside its stroke, in the arrow's outline colour (warm ink).
 const RING_OUTLINE_OFFSET = 0.045
 // Caption line: same distance as the control panel (60 cm) and just above it, so it sits at the
 // bottom of the view. Scaled by 60/110 so the text keeps the angular size it is tuned for at 110 cm.
@@ -63,7 +63,7 @@ interface Element {
   readonly ringBase: number // cm, authored ring size
   readonly ringMat: Material
   readonly arrowMat: Material
-  readonly outline: SceneObject // dark-blue outline behind the arrow
+  readonly outline: SceneObject // warm-ink outline behind the arrow
   readonly outlineMat: Material
   readonly ringOutlines: SceneObject[] // outside and inside the ring stroke
   readonly ringOutlineMat: Material
@@ -185,7 +185,7 @@ export class Bearings extends BaseScriptComponent {
     const arrow = this.child(pivot, "Arrow")
     arrow.getTransform().setLocalRotation(quat.quatIdentity())
     arrow.getTransform().setLocalScale(new vec3(ARROW_SIZE_CM, ARROW_SIZE_CM, ARROW_SIZE_CM))
-    // Outline: a slightly heavier chevron drawn just behind the arrow, in the button-label blue.
+    // Outline: a slightly heavier chevron drawn just behind the arrow, in warm ink (the alarm: red, one solid shape).
     const outline = this.child(pivot, "ArrowOutline")
     outline.getTransform().setLocalRotation(quat.quatIdentity())
     outline.getTransform().setLocalScale(new vec3(ARROW_SIZE_CM, ARROW_SIZE_CM, ARROW_SIZE_CM))
@@ -381,8 +381,9 @@ export class Bearings extends BaseScriptComponent {
     e.pivot.enabled = e.morph < 0.98
     e.pivot.getTransform().setLocalScale(new vec3(arrowScale, arrowScale, arrowScale))
     e.pivot.getTransform().setLocalRotation(quat.fromEulerAngles(0, 0, e.phi * RAD))
-    e.outlineMat.mainPass.baseColor = new vec4(OUTLINE_COLOUR.r, OUTLINE_COLOUR.g, OUTLINE_COLOUR.b, alpha)
-    e.ringOutlineMat.mainPass.baseColor = new vec4(OUTLINE_COLOUR.r, OUTLINE_COLOUR.g, OUTLINE_COLOUR.b, alpha)
+    const o = e.id === "alarm" ? ALARM_OUTLINE : OUTLINE_COLOUR
+    e.outlineMat.mainPass.baseColor = new vec4(o.r, o.g, o.b, alpha)
+    e.ringOutlineMat.mainPass.baseColor = new vec4(o.r, o.g, o.b, alpha)
     const c = held && e.id !== "alarm" ? FOCUS_COLOUR : e.baseColor
     e.ringMat.mainPass.baseColor = new vec4(c.r, c.g, c.b, alpha)
     e.arrowMat.mainPass.baseColor = new vec4(c.r, c.g, c.b, alpha)

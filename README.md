@@ -17,7 +17,7 @@ Sound Bearings puts a visual marker on each sound the wearer cannot place by ear
 - **A ring on the sound, when it is in view.** If a sound comes from something you are looking at, a thin ring sits on that object with a short label, for example "Kettle". The ring pulses with the loudness of the sound.
 - **An arrow at the edge, when it is beside or behind you.** If the sound comes from outside your view, an arrow sits at the edge of your view on the side of the shorter turn, with the label next to it. As you turn toward the sound, the arrow slides along the edge and becomes the ring. It is one element changing shape, not a swap. A sound directly behind you does not make the arrow jump from side to side. The smoke alarm on the ceiling tilts its arrow up.
 - **One Focus pinch.** Pinch the Focus button while a ring is in view and sounding. That sound is held. The other sounds drop to 30 percent volume, and their rings and arrows drop to 30 percent brightness (their labels stay readable at 50 percent). Pinch again to release. If the held sound goes silent, its ring stays as a faint outline.
-- **The smoke alarm always breaks through.** Focus never dims it. It uses its own orange colour, and a caption appears while it sounds.
+- **The smoke alarm always breaks through.** Focus never dims it. Its arrow and ring are red, and its caption is a cream tag with a red edge, shown while it sounds.
 - **Replay** restarts the 45-second kitchen scene, so it can be recorded or tested again.
 
 A ring appears when a sound is within 14 degrees of the centre of your view. It turns back into an arrow once the sound is more than 19 degrees away (5 degrees of hysteresis, so it does not flicker at the border).
@@ -46,7 +46,7 @@ Six scenarios live in `Assets/Scripts/Tests/`. They run in the Lens Studio previ
 | `c5-alarm-replay` | With the kettle held, the smoke alarm still shows at full brightness and full volume with its caption. Replay clears Focus and restarts at the opening caption. |
 | `x-behind-stays-put` | With a source directly behind the wearer, its arrow stays on the same side for 60 frames. |
 
-What the tests do not cover: the alarm's orange colour, the exact size of the pulse (only that the loudness varies), whether a real hand can reach the buttons, and how the sound direction actually sounds.
+What the tests do not cover: the alarm's red colour, the exact size of the pulse (only that the loudness varies), whether a real hand can reach the buttons, and how the sound direction actually sounds.
 
 ## What is simulated
 

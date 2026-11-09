@@ -22,25 +22,31 @@ export interface LabelStyle {
   outline: vec4 // thin edge so the tag reads when it crosses a light object
 }
 
-/** The deep blue of the button labels, also the outline of tags and arrows. */
-export const OUTLINE_COLOUR = new vec4(0.1, 0.22, 0.45, 1)
+// Colours are chosen for emitted light. The Specs display adds light to the world, so a dark channel is
+// see-through; the preview simulates this. Cream and ink display close to their values, the red is at
+// full light because the wall shows through its green and blue.
+/** Warm ink, never black (dark is see-through on the glasses): the outline of tags and arrows and the colour of the button labels. */
+export const OUTLINE_COLOUR = new vec4(0.18, 0.157, 0.133, 1)
+/** The alarm's edge is red: the arrow and ring are one solid red shape. */
+export const ALARM_OUTLINE = new vec4(1.0, 0.11, 0.08, 1)
 const OUTLINE_CM = 0.14
 
 export const STYLE_LIGHT: LabelStyle = {
-  background: new vec4(0.95, 0.98, 1.0, 1),
-  foreground: new vec4(0.1, 0.22, 0.45, 1),
+  background: new vec4(0.953, 0.925, 0.867, 1),
+  foreground: new vec4(0.18, 0.157, 0.133, 1),
   outline: OUTLINE_COLOUR
 }
 // The focused, sounding source: the brightest thing on screen.
 export const STYLE_FOCUS: LabelStyle = {
   background: new vec4(1.0, 1.0, 1.0, 1),
-  foreground: new vec4(0.05, 0.15, 0.4, 1),
+  foreground: new vec4(0.12, 0.1, 0.08, 1),
   outline: OUTLINE_COLOUR
 }
+// Cream plate, ink text, red edge: the safety sentence stays legible on any wall; the red lives on the arrow and ring.
 export const STYLE_WARNING: LabelStyle = {
-  background: new vec4(1.0, 0.8, 0.52, 1),
-  foreground: new vec4(0.5, 0.14, 0.02, 1),
-  outline: new vec4(0.5, 0.14, 0.02, 1) // the alarm keeps its own colour
+  background: new vec4(0.953, 0.925, 0.867, 1),
+  foreground: new vec4(0.18, 0.157, 0.133, 1),
+  outline: ALARM_OUTLINE // the alarm keeps its own colour
 }
 
 /** Light rounded plate. No collider, so it never steals a pinch. */
